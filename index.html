@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FreeLeadManagement CRM</title>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--surface3:#1f2d42;
+  --border:#1e2d45;--accent:#00d4ff;--accent2:#7c3aed;--accent3:#10b981;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --green:#10b981;--red:#ef4444;--yellow:#f59e0b;--purple:#8b5cf6;
+  --font:'Sora',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+input,select,textarea{font-family:var(--font)}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;overflow:hidden}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.logo-text{font-size:13px;font-weight:700;letter-spacing:.05em;color:var(--accent);text-transform:uppercase}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.sidebar-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;transition:all .15s;color:var(--text2);font-size:13px;font-weight:500;border:1px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(0,212,255,.08);color:var(--accent);border-color:rgba(0,212,255,.15)}
+.sidebar-footer{padding:12px 10px;border-top:1px solid var(--border)}
+.user-badge{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surface2);cursor:pointer}
+.avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600}
+.user-role{font-size:10px;color:var(--text3)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;min-height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.page-title{font-size:16px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font)}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{background:#00bde6}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.btn-success{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.content{flex:1;overflow-y:auto;padding:24px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.c1::before{background:linear-gradient(90deg,var(--accent),transparent)}
+.stat-card.c2::before{background:linear-gradient(90deg,var(--green),transparent)}
+.stat-card.c3::before{background:linear-gradient(90deg,var(--yellow),transparent)}
+.stat-card.c4::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.stat-value{font-size:28px;font-weight:700;margin:6px 0 4px;font-family:var(--mono)}
+.stat-sub{font-size:11px;color:var(--text3)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.card-title{font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text)}
+.pipeline-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;min-height:calc(100vh - 160px)}
+.pipeline-col{min-width:220px;width:220px;background:var(--surface);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;max-height:calc(100vh - 160px)}
+.col-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.col-title{font-size:12px;font-weight:700}
+.col-count{font-size:11px;background:var(--surface2);color:var(--text3);padding:2px 7px;border-radius:20px;font-family:var(--mono)}
+.col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.col-body{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.lead-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s}
+.lead-card:hover{border-color:var(--accent);background:var(--surface3)}
+.lead-name{font-size:12px;font-weight:600;margin-bottom:4px}
+.lead-phone{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px}
+.lead-meta{display:flex;align-items:center;justify-content:space-between}
+.wa-btn{width:26px;height:26px;border-radius:6px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#25d366;transition:all .15s;flex-shrink:0}
+.wa-btn:hover{background:rgba(37,211,102,.25)}
+.value-tag{font-size:10px;color:var(--green);font-family:var(--mono)}
+.search-bar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px 8px 36px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+.search-input:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3)}
+select.filter-sel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;outline:none;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:12px 14px;font-size:13px}
+tbody tr:last-child{border-bottom:none}
+.stage-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700}
+.modal-body{padding:20px 24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:80px}
+.detail-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--text3);transition:all .15s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.timeline-item{display:flex;gap:12px;margin-bottom:14px}
+.timeline-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.timeline-content{flex:1}
+.timeline-text{font-size:13px}
+.timeline-date{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.team-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.team-avatar{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;margin-bottom:12px}
+.team-name{font-size:15px;font-weight:700}
+.team-email{font-size:12px;color:var(--text3);margin-top:2px;margin-bottom:14px}
+.team-stats{display:flex;gap:16px}
+.team-stat-val{font-size:18px;font-weight:700;font-family:var(--mono)}
+.team-stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.notif-badge{background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:-6px;margin-top:-6px}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:100px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bar{width:100%;border-radius:4px 4px 0 0}
+.bar-lbl{font-size:10px;color:var(--text3);text-align:center}
+.bar-val{font-size:10px;font-family:var(--mono);color:var(--text2)}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.tag-blue{background:rgba(0,212,255,.1);color:var(--accent)}
+.tag-green{background:rgba(16,185,129,.1);color:var(--green)}
+.tag-purple{background:rgba(124,58,237,.1);color:var(--purple)}
+.tag-gray{background:rgba(148,163,184,.1);color:var(--text2)}
+.tag-yellow{background:rgba(245,158,11,.1);color:var(--yellow)}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.w-full{width:100%}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;color:var(--text3);gap:12px}
+/* Login */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden}
+.login-glow{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.06) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:420px;position:relative;z-index:1}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo-text{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+.login-logo-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.login-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--text3);margin-bottom:28px}
+.login-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:16px}
+.login-footer{text-align:center;margin-top:20px;font-size:12px;color:var(--text3)}
+.role-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700}
+.role-super{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.2)}
+.role-admin{background:rgba(124,58,237,.1);color:var(--purple);border:1px solid rgba(124,58,237,.2)}
+.role-sales{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+/* Users management */
+.users-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.pw-dots{letter-spacing:3px;font-size:16px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState} = React;
+
+const STAGES = ["New Lead","Contacted","Interested","Demo","Proposal Shared","Follow-up","Not Interested","Converted","Lost"];
+const STAGE_COLORS = {"New Lead":"#6366f1","Contacted":"#0ea5e9","Interested":"#f59e0b","Demo":"#8b5cf6","Proposal Shared":"#ec4899","Follow-up":"#f97316","Not Interested":"#94a3b8","Converted":"#10b981","Lost":"#ef4444"};
+const SOURCES = ["Meta Lead Ads","Google Ads","Google Sheets","Excel Upload","Manual","Referral","Website"];
+
+const SAMPLE_LEADS = [
+  {id:1,name:"Priya Sharma",phone:"9876543210",email:"priya@email.com",source:"Meta Lead Ads",campaign:"Summer Sale",stage:"New Lead",assignedTo:"Rahul",createdAt:"2024-01-15",value:15000,notes:[],followUp:null,calls:[]},
+  {id:2,name:"Amit Gupta",phone:"9123456780",email:"amit@email.com",source:"Google Ads",campaign:"Brand Awareness",stage:"Contacted",assignedTo:"Sneha",createdAt:"2024-01-14",value:28000,notes:[{text:"Very interested in premium plan",date:"2024-01-14"}],followUp:"2024-01-20",calls:[]},
+  {id:3,name:"Kavya Reddy",phone:"9988776655",email:"kavya@email.com",source:"Referral",campaign:"",stage:"Interested",assignedTo:"Rahul",createdAt:"2024-01-13",value:45000,notes:[],followUp:"2024-01-18",calls:[{type:"Outgoing",duration:"5 min",outcome:"Positive",date:"2024-01-13"}]},
+  {id:4,name:"Rohan Mehta",phone:"9765432109",email:"rohan@email.com",source:"Website",campaign:"",stage:"Demo",assignedTo:"Sneha",createdAt:"2024-01-12",value:32000,notes:[{text:"Demo scheduled for Friday",date:"2024-01-12"}],followUp:"2024-01-19",calls:[]},
+  {id:5,name:"Deepa Nair",phone:"9654321098",email:"deepa@email.com",source:"Meta Lead Ads",campaign:"New Year Offer",stage:"Converted",assignedTo:"Rahul",createdAt:"2024-01-10",value:55000,notes:[],followUp:null,calls:[]},
+  {id:6,name:"Vikram Singh",phone:"9543210987",email:"vikram@email.com",source:"Google Ads",campaign:"Brand Awareness",stage:"Lost",assignedTo:"Sneha",createdAt:"2024-01-09",value:18000,notes:[{text:"Budget constraints",date:"2024-01-11"}],followUp:null,calls:[]},
+];
+const SAMPLE_USERS = [
+  {id:1,name:"Rahul Kumar",email:"rahul@flm.com",role:"Sales"},
+  {id:2,name:"Sneha Patel",email:"sneha@flm.com",role:"Sales"},
+];
+
+
+// ── Accounts (Super Admin + Sales Users) ─────────────────────────────────────
+const DEFAULT_ACCOUNTS = [
+  {id:0,name:"Super Admin",email:"admin@freeleadmanagement.com",password:"Admin@1234",role:"Super Admin"},
+  {id:1,name:"Rahul Kumar",email:"rahul@flm.com",password:"Rahul@123",role:"Sales"},
+  {id:2,name:"Sneha Patel",email:"sneha@flm.com",password:"Sneha@123",role:"Sales"},
+];
+
+function getAccounts(){
+  try{return JSON.parse(localStorage.getItem("flm_accounts"))||DEFAULT_ACCOUNTS;}
+  catch(e){return DEFAULT_ACCOUNTS;}
+}
+function saveAccounts(a){try{localStorage.setItem("flm_accounts",JSON.stringify(a));}catch(e){}}
+
+// ── Login Page ────────────────────────────────────────────────────────────────
+function LoginPage({onLogin}){
+  const [email,setEmail]=useState("");
+  const [pw,setPw]=useState("");
+  const [showPw,setShowPw]=useState(false);
+  const [error,setError]=useState("");
+  const [loading,setLoading]=useState(false);
+
+  const login=()=>{
+    setError("");
+    if(!email.trim()||!pw.trim()){setError("Please enter email and password.");return;}
+    setLoading(true);
+    setTimeout(()=>{
+      const accs=getAccounts();
+      const user=accs.find(a=>a.email.toLowerCase()===email.toLowerCase().trim()&&a.password===pw);
+      if(user){onLogin(user);}
+      else{setError("Incorrect email or password. Please try again.");}
+      setLoading(false);
+    },500);
+  };
+
+  return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg)",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",width:500,height:500,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,212,255,.07) 0%,transparent 70%)",top:"50%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:20,padding:40,width:"100%",maxWidth:420,position:"relative",zIndex:1}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--accent)",letterSpacing:".12em",textTransform:"uppercase",fontFamily:"var(--mono)",marginBottom:8}}>● FREELEADMANAGEMENT</div>
+          <div style={{fontSize:24,fontWeight:800,marginBottom:6}}>Welcome back 👋</div>
+          <div style={{fontSize:13,color:"var(--text3)"}}>Sign in to your CRM account</div>
+        </div>
+        {error&&<div style={{background:"rgba(239,68,68,.1)",border:"1px solid rgba(239,68,68,.25)",borderRadius:8,padding:"10px 14px",fontSize:12,color:"var(--red)",marginBottom:16}}>⚠️ {error}</div>}
+        <div className="form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="admin@freeleadmanagement.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/>
+        </div>
+        <div className="form-group">
+          <label>Password</label>
+          <div style={{position:"relative"}}>
+            <input type={showPw?"text":"password"} placeholder="Enter your password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()} style={{paddingRight:44}}/>
+            <span onClick={()=>setShowPw(!showPw)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",cursor:"pointer",fontSize:16,userSelect:"none"}}>{showPw?"🙈":"👁️"}</span>
+          </div>
+        </div>
+        <button className="btn btn-primary" style={{width:"100%",padding:"11px",fontSize:14,justifyContent:"center",marginTop:4}} onClick={login} disabled={loading}>
+          {loading?"Signing in...":"Sign In →"}
+        </button>
+        <div style={{marginTop:24,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:14}}>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:10}}>Default Login Credentials</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{fontSize:12}}><span style={{color:"var(--accent)",fontWeight:700}}>👑 Super Admin</span><br/><span style={{fontFamily:"var(--mono)",color:"var(--text3)",fontSize:11}}>admin@freeleadmanagement.com / Admin@1234</span></div>
+            <div style={{fontSize:12}}><span style={{color:"var(--green)",fontWeight:700}}>👤 Sales User</span><br/><span style={{fontFamily:"var(--mono)",color:"var(--text3)",fontSize:11}}>rahul@flm.com / Rahul@123</span></div>
+          </div>
+          <div style={{fontSize:11,color:"var(--yellow)",marginTop:10}}>⚠️ Change passwords after first login (Team page)</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Stage Badge ───────────────────────────────────────────────────────────────
+function StageBadge({stage}){
+  const color=STAGE_COLORS[stage]||"#94a3b8";
+  return <span className="stage-badge" style={{background:color+"18",color}}>{stage}</span>;
+}
+
+// ── Main App ──────────────────────────────────────────────────────────────────
+function App(){
+  const [currentUser,setCurrentUser]=useState(null);
+  const [page,setPage]=useState("dashboard");
+  const [leads,setLeads]=useState(SAMPLE_LEADS);
+  const [accounts,setAccounts]=useState(getAccounts);
+  const [modal,setModal]=useState(null);
+  const [selectedLead,setSelectedLead]=useState(null);
+  const [search,setSearch]=useState("");
+  const [filterStage,setFilterStage]=useState("All");
+  const [detailTab,setDetailTab]=useState("timeline");
+
+  React.useEffect(()=>{saveAccounts(accounts);},[accounts]);
+
+  if(!currentUser) return <LoginPage onLogin={u=>setCurrentUser(u)}/>;
+
+  const isSuperAdmin=currentUser.role==="Super Admin";
+  const salesUsers=accounts.filter(a=>a.role!=="Super Admin");
+
+  const openLead=(lead)=>{setSelectedLead(lead);setModal("leadDetail");setDetailTab("timeline")};
+  const openWA=(phone,e)=>{if(e)e.stopPropagation();window.open(`https://wa.me/91${phone}`,"_blank")};
+  const logout=()=>{setCurrentUser(null);setPage("dashboard");};
+
+  const myLeads=isSuperAdmin?leads:leads.filter(l=>l.assignedTo===currentUser.name.split(" ")[0]);
+  const filteredLeads=myLeads.filter(l=>{
+    const ms=l.name.toLowerCase().includes(search.toLowerCase())||l.phone.includes(search);
+    const mst=filterStage==="All"||l.stage===filterStage;
+    return ms&&mst;
+  });
+  const stats={
+    total:myLeads.length,
+    converted:myLeads.filter(l=>l.stage==="Converted").length,
+    pipeline:myLeads.filter(l=>!["Converted","Lost"].includes(l.stage)).reduce((a,b)=>a+b.value,0),
+    followUps:myLeads.filter(l=>l.followUp).length,
+  };
+
+  const navItems=[
+    {key:"dashboard",label:"Dashboard",icon:"🏠"},
+    {key:"leads",label:"All Leads",icon:"👥"},
+    {key:"pipeline",label:"Pipeline",icon:"📋"},
+    ...(isSuperAdmin?[{key:"team",label:"Team & Users",icon:"👤"}]:[]),
+  ];
+
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-text">FreeLeadMgmt</div>
+          <div className="logo-sub">v1.0 · CRM Platform</div>
+        </div>
+        <nav className="sidebar-nav">
+          {navItems.map(n=>(
+            <div key={n.key} className={`nav-item ${page===n.key?"active":""}`} onClick={()=>setPage(n.key)}>
+              <span>{n.icon}</span><span>{n.label}</span>
+            </div>
+          ))}
+        </nav>
+        <div className="sidebar-footer">
+          <div style={{padding:"6px 10px",marginBottom:4}}>
+            <div style={{fontSize:10,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:4}}>Logged in as</div>
+            <div style={{fontSize:12,fontWeight:700}}>{currentUser.name}</div>
+            <div style={{fontSize:10,color:currentUser.role==="Super Admin"?"var(--accent)":"var(--green)"}}>{currentUser.role==="Super Admin"?"👑":"👤"} {currentUser.role}</div>
+          </div>
+          <button className="btn btn-ghost btn-sm" style={{width:"100%",justifyContent:"center",marginTop:4}} onClick={logout}>🚪 Logout</button>
+        </div>
+      </aside>
+
+      <div className="main">
+        <header className="topbar">
+          <div className="page-title">
+            {page==="dashboard"&&"Dashboard"}{page==="leads"&&"All Leads"}
+            {page==="pipeline"&&"Pipeline Board"}{page==="team"&&"Team & Users"}
+          </div>
+          <div className="topbar-right">
+            <div style={{position:"relative",cursor:"pointer"}}>🔔<div className="notif-badge">{stats.followUps}</div></div>
+            <button className="btn btn-primary" onClick={()=>setModal("addLead")}>+ Add Lead</button>
+          </div>
+        </header>
+        <div className="content">
+          {page==="dashboard"&&<Dashboard stats={stats} leads={myLeads} openLead={openLead} openWA={openWA}/>}
+          {page==="leads"&&<LeadsPage leads={filteredLeads} search={search} setSearch={setSearch} filterStage={filterStage} setFilterStage={setFilterStage} openLead={openLead} openWA={openWA} setLeads={setLeads}/>}
+          {page==="pipeline"&&<PipelinePage leads={myLeads} setLeads={setLeads} openLead={openLead} openWA={openWA}/>}
+          {page==="team"&&isSuperAdmin&&<TeamPage accounts={accounts} setAccounts={setAccounts} leads={leads} setModal={setModal}/>}
+        </div>
+      </div>
+
+      {modal==="addLead"&&<AddLeadModal leads={leads} setLeads={setLeads} close={()=>setModal(null)} users={salesUsers}/>}
+      {modal==="leadDetail"&&selectedLead&&<LeadDetailModal lead={leads.find(l=>l.id===selectedLead.id)||selectedLead} leads={leads} setLeads={setLeads} close={()=>{setModal(null);setSelectedLead(null)}} detailTab={detailTab} setDetailTab={setDetailTab} users={salesUsers} openWA={openWA}/>}
+      {modal==="addUser"&&<AddUserModal accounts={accounts} setAccounts={setAccounts} close={()=>setModal(null)}/>}
+    </div>
+  );
+}
+function Dashboard({stats,leads,openLead,openWA}){
+  const stageData=STAGES.map(s=>({stage:s,count:leads.filter(l=>l.stage===s).length}));
+  const maxCount=Math.max(...stageData.map(s=>s.count),1);
+  const recent=[...leads].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
+  return (
+    <>
+      <div className="stat-grid">
+        <div className="stat-card c1"><div className="stat-label">Total Leads</div><div className="stat-value">{stats.total}</div><div className="stat-sub">All time</div></div>
+        <div className="stat-card c2"><div className="stat-label">Converted</div><div className="stat-value" style={{color:"var(--green)"}}>{stats.converted}</div><div className="stat-sub">{Math.round(stats.converted/stats.total*100)}% rate</div></div>
+        <div className="stat-card c3"><div className="stat-label">Pipeline Value</div><div className="stat-value" style={{color:"var(--yellow)"}}>₹{(stats.pipeline/1000).toFixed(0)}K</div><div className="stat-sub">Active</div></div>
+        <div className="stat-card c4"><div className="stat-label">Follow-ups</div><div className="stat-value" style={{color:"var(--purple)"}}>{stats.followUps}</div><div className="stat-sub">Scheduled</div></div>
+      </div>
+      <div className="grid-2" style={{marginBottom:16}}>
+        <div className="card">
+          <div className="card-title">Pipeline Overview</div>
+          <div className="bar-chart">
+            {stageData.filter(s=>!["Not Interested","Lost"].includes(s.stage)).map(s=>(
+              <div key={s.stage} className="bar-wrap">
+                <div className="bar-val">{s.count}</div>
+                <div className="bar" style={{height:`${(s.count/maxCount)*80}px`,minHeight:"4px",background:STAGE_COLORS[s.stage]+"99"}}/>
+                <div className="bar-lbl">{s.stage.split(" ")[0]}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="card">
+          <div className="card-title">Lead Sources</div>
+          {Object.entries(leads.reduce((acc,l)=>{acc[l.source]=(acc[l.source]||0)+1;return acc},{})).map(([src,cnt])=>(
+            <div key={src} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+              <div style={{flex:1,fontSize:12}}>{src}</div>
+              <div style={{flex:2,height:8,background:"var(--surface2)",borderRadius:4,overflow:"hidden"}}>
+                <div style={{width:`${(cnt/leads.length)*100}%`,height:"100%",background:"var(--accent)",borderRadius:4,opacity:.7}}/>
+              </div>
+              <div style={{fontSize:11,color:"var(--text3)",fontFamily:"var(--mono)",width:20,textAlign:"right"}}>{cnt}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="card" style={{padding:0}}>
+        <div style={{padding:"14px 20px 0",fontWeight:700,fontSize:13}}>Recent Leads</div>
+        <table><thead><tr><th>Name</th><th>Phone</th><th>Stage</th><th>Value</th><th>WhatsApp</th></tr></thead>
+        <tbody>{recent.map(l=>(
+          <tr key={l.id} onClick={()=>openLead(l)} style={{cursor:"pointer"}}>
+            <td style={{fontWeight:600}}>{l.name}</td>
+            <td style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--text3)"}}>{l.phone}</td>
+            <td><StageBadge stage={l.stage}/></td>
+            <td style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>₹{l.value.toLocaleString()}</td>
+            <td><div className="wa-btn" onClick={e=>openWA(l.phone,e)}>💬</div></td>
+          </tr>
+        ))}</tbody></table>
+      </div>
+    </>
+  );
+}
+
+function LeadsPage({leads,search,setSearch,filterStage,setFilterStage,openLead,openWA,setLeads}){
+  const del=(id,e)=>{e.stopPropagation();if(window.confirm("Move to trash?"))setLeads(p=>p.filter(l=>l.id!==id))};
+  return (
+    <>
+      <div className="search-bar">
+        <div className="search-wrap">
+          <span className="search-icon">🔍</span>
+          <input className="search-input" placeholder="Search by name or phone..." value={search} onChange={e=>setSearch(e.target.value)}/>
+        </div>
+        <select className="filter-sel" value={filterStage} onChange={e=>setFilterStage(e.target.value)}>
+          <option>All</option>{STAGES.map(s=><option key={s}>{s}</option>)}
+        </select>
+        <span style={{fontSize:11,color:"var(--text3)"}}>{leads.length} leads</span>
+      </div>
+      <div className="card" style={{padding:0}}>
+        <table><thead><tr><th>Name</th><th>Phone</th><th>Source</th><th>Stage</th><th>Assigned</th><th>Value</th><th>Follow-up</th><th>Actions</th></tr></thead>
+        <tbody>
+          {leads.length===0&&<tr><td colSpan={8}><div className="empty-state"><p>No leads found</p></div></td></tr>}
+          {leads.map(l=>(
+            <tr key={l.id} onClick={()=>openLead(l)} style={{cursor:"pointer"}}>
+              <td style={{fontWeight:600}}>{l.name}</td>
+              <td style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--text3)"}}>{l.phone}</td>
+              <td><span className="tag tag-blue">{l.source}</span></td>
+              <td><StageBadge stage={l.stage}/></td>
+              <td style={{fontSize:12}}>{l.assignedTo||"—"}</td>
+              <td style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>₹{l.value.toLocaleString()}</td>
+              <td style={{fontFamily:"var(--mono)",fontSize:11,color:"var(--text3)"}}>{l.followUp||"—"}</td>
+              <td onClick={e=>e.stopPropagation()}>
+                <div style={{display:"flex",gap:6}}>
+                  <div className="wa-btn" onClick={e=>openWA(l.phone,e)}>💬</div>
+                  <button className="btn btn-sm btn-ghost" onClick={()=>openLead(l)}>✏️</button>
+                  <button className="btn btn-sm btn-danger" onClick={e=>del(l.id,e)}>🗑</button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody></table>
+      </div>
+    </>
+  );
+}
+
+function TeamPage({accounts,setAccounts,leads,setModal}){
+  const [editingId,setEditingId]=useState(null);
+  const [editPw,setEditPw]=useState("");
+  const salesUsers=accounts.filter(a=>a.role!=="Super Admin");
+
+  const removeUser=(id)=>{
+    if(window.confirm("Remove this user?")) setAccounts(p=>p.filter(a=>a.id!==id));
+  };
+  const updatePw=(id)=>{
+    if(!editPw.trim()){alert("Enter a new password");return;}
+    setAccounts(p=>p.map(a=>a.id===id?{...a,password:editPw}:a));
+    setEditingId(null);setEditPw("");
+    alert("Password updated!");
+  };
+
+  return (
+    <>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{fontSize:13,color:"var(--text3)"}}>{salesUsers.length} team members</div>
+        <button className="btn btn-primary" onClick={()=>setModal("addUser")}>+ Add User</button>
+      </div>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",marginBottom:20}}>
+        <table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Leads</th><th>Converted</th><th>Password</th><th>Actions</th></tr></thead>
+        <tbody>
+          {salesUsers.map(u=>(
+            <tr key={u.id}>
+              <td style={{fontWeight:600}}>{u.name}</td>
+              <td style={{fontSize:12,color:"var(--text3)",fontFamily:"var(--mono)"}}>{u.email}</td>
+              <td><span style={{background:"rgba(16,185,129,.1)",color:"var(--green)",padding:"2px 8px",borderRadius:4,fontSize:11,fontWeight:700}}>👤 {u.role}</span></td>
+              <td style={{fontFamily:"var(--mono)"}}>{leads.filter(l=>l.assignedTo===u.name.split(" ")[0]).length}</td>
+              <td style={{fontFamily:"var(--mono)",color:"var(--green)"}}>{leads.filter(l=>l.assignedTo===u.name.split(" ")[0]&&l.stage==="Converted").length}</td>
+              <td>
+                {editingId===u.id?(
+                  <div style={{display:"flex",gap:6}}>
+                    <input type="text" value={editPw} onChange={e=>setEditPw(e.target.value)} placeholder="New password" style={{width:130,padding:"4px 8px",fontSize:12}}/>
+                    <button className="btn btn-sm btn-primary" onClick={()=>updatePw(u.id)}>Save</button>
+                    <button className="btn btn-sm btn-ghost" onClick={()=>setEditingId(null)}>✕</button>
+                  </div>
+                ):(
+                  <button className="btn btn-sm btn-ghost" onClick={()=>{setEditingId(u.id);setEditPw("");}}>🔑 Change</button>
+                )}
+              </td>
+              <td><button className="btn btn-sm btn-danger" onClick={()=>removeUser(u.id)}>🗑 Remove</button></td>
+            </tr>
+          ))}
+          {salesUsers.length===0&&<tr><td colSpan={7}><div className="empty-state"><p>No team members yet. Add your first user!</p></div></td></tr>}
+        </tbody></table>
+      </div>
+      <div style={{background:"rgba(0,212,255,.05)",border:"1px solid rgba(0,212,255,.15)",borderRadius:12,padding:16}}>
+        <div style={{fontSize:12,fontWeight:700,color:"var(--accent)",marginBottom:8}}>👑 Super Admin Account</div>
+        <div style={{fontSize:12,color:"var(--text2)"}}>Email: <span style={{fontFamily:"var(--mono)"}}>admin@freeleadmanagement.com</span></div>
+        <div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>To change Super Admin password, contact support or edit the source code.</div>
+      </div>
+    </>
+  );
+}
+function PipelinePage({leads,setLeads,openLead,openWA}){
+  const [dragging,setDragging]=useState(null);
+  const [dragOver,setDragOver]=useState(null);
+  const onDragStart=(e,lead)=>{setDragging(lead);e.dataTransfer.effectAllowed="move"};
+  const onDragOver=(e,stage)=>{e.preventDefault();setDragOver(stage)};
+  const onDrop=(e,stage)=>{
+    e.preventDefault();
+    if(dragging&&dragging.stage!==stage)setLeads(p=>p.map(l=>l.id===dragging.id?{...l,stage}:l));
+    setDragging(null);setDragOver(null);
+  };
+  return (
+    <div className="pipeline-scroll">
+      {STAGES.map(stage=>{
+        const sl=leads.filter(l=>l.stage===stage);
+        return (
+          <div key={stage} className="pipeline-col" style={{borderColor:dragOver===stage?STAGE_COLORS[stage]:undefined}}
+            onDragOver={e=>onDragOver(e,stage)} onDrop={e=>onDrop(e,stage)} onDragLeave={()=>setDragOver(null)}>
+            <div className="col-header">
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <div className="col-dot" style={{background:STAGE_COLORS[stage]}}/>
+                <span className="col-title">{stage}</span>
+              </div>
+              <span className="col-count">{sl.length}</span>
+            </div>
+            <div className="col-body">
+              {sl.map(lead=>(
+                <div key={lead.id} className="lead-card" draggable onDragStart={e=>onDragStart(e,lead)} onClick={()=>openLead(lead)}>
+                  <div className="lead-name">{lead.name}</div>
+                  <div className="lead-phone">{lead.phone}</div>
+                  <div className="lead-meta">
+                    <span className="value-tag">₹{(lead.value/1000).toFixed(0)}K</span>
+                    <div className="wa-btn" onClick={e=>openWA(lead.phone,e)}>💬</div>
+                  </div>
+                  {lead.followUp&&<div style={{fontSize:10,color:"var(--yellow)",marginTop:6}}>📅 {lead.followUp}</div>}
+                </div>
+              ))}
+              {sl.length===0&&<div style={{textAlign:"center",color:"var(--text3)",fontSize:11,padding:"20px 0"}}>Drop leads here</div>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function LeadDetailModal({lead,leads,setLeads,close,detailTab,setDetailTab,users,openWA}){
+  const [note,setNote]=useState("");
+  const [callNote,setCallNote]=useState("");
+  const [editMode,setEditMode]=useState(false);
+  const [form,setForm]=useState({...lead});
+  const upd=(f,v)=>setForm(p=>({...p,[f]:v}));
+  const saveEdit=()=>{setLeads(p=>p.map(l=>l.id===lead.id?{...l,...form}:l));setEditMode(false)};
+  const addNote=()=>{
+    if(!note.trim())return;
+    setLeads(p=>p.map(l=>l.id===lead.id?{...l,notes:[...l.notes,{text:note,date:new Date().toISOString().split("T")[0]}]}:l));
+    setNote("");
+  };
+  const addCall=()=>{
+    setLeads(p=>p.map(l=>l.id===lead.id?{...l,calls:[...l.calls,{type:"Outgoing",duration:"5 min",outcome:callNote||"Discussed",date:new Date().toISOString().split("T")[0]}]}:l));
+    setCallNote("");
+  };
+  return (
+    <div className="modal-overlay" onClick={close}>
+      <div className="modal" style={{maxWidth:680}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <div className="modal-title">{lead.name}</div>
+            <div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>{lead.phone} · {lead.email}</div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button className="btn btn-success btn-sm" onClick={e=>openWA(lead.phone,e)}>💬 WhatsApp</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setEditMode(!editMode)}>{editMode?"Cancel":"✏️ Edit"}</button>
+            <button className="btn btn-ghost btn-sm" onClick={close}>✕</button>
+          </div>
+        </div>
+        <div className="modal-body">
+          {editMode?(
+            <>
+              <div className="form-row">
+                <div className="form-group"><label>Name</label><input type="text" value={form.name} onChange={e=>upd("name",e.target.value)}/></div>
+                <div className="form-group"><label>Phone</label><input type="tel" value={form.phone} onChange={e=>upd("phone",e.target.value)}/></div>
+              </div>
+              <div className="form-row">
+                <div className="form-group"><label>Stage</label><select value={form.stage} onChange={e=>upd("stage",e.target.value)}>{STAGES.map(s=><option key={s}>{s}</option>)}</select></div>
+                <div className="form-group"><label>Value (₹)</label><input type="number" value={form.value} onChange={e=>upd("value",Number(e.target.value))}/></div>
+              </div>
+              <div className="form-row">
+                <div className="form-group"><label>Assigned To</label><select value={form.assignedTo} onChange={e=>upd("assignedTo",e.target.value)}><option value="">Unassigned</option>{users.map(u=><option key={u.id}>{u.name.split(" ")[0]}</option>)}</select></div>
+                <div className="form-group"><label>Follow-up Date</label><input type="date" value={form.followUp||""} onChange={e=>upd("followUp",e.target.value)}/></div>
+              </div>
+              <div style={{display:"flex",justifyContent:"flex-end"}}><button className="btn btn-primary" onClick={saveEdit}>Save Changes</button></div>
+            </>
+          ):(
+            <>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}}>
+                <div style={{background:"var(--surface2)",borderRadius:8,padding:12}}><div style={{fontSize:10,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:4}}>Stage</div><StageBadge stage={lead.stage}/></div>
+                <div style={{background:"var(--surface2)",borderRadius:8,padding:12}}><div style={{fontSize:10,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:4}}>Value</div><div style={{fontSize:16,fontWeight:700,color:"var(--green)",fontFamily:"var(--mono)"}}>₹{lead.value.toLocaleString()}</div></div>
+                <div style={{background:"var(--surface2)",borderRadius:8,padding:12}}><div style={{fontSize:10,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:4}}>Follow-up</div><div style={{fontSize:13,fontWeight:600,color:"var(--yellow)"}}>{lead.followUp||"Not set"}</div></div>
+              </div>
+              <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+                <span className="tag tag-blue">{lead.source}</span>
+                {lead.campaign&&<span className="tag tag-gray">{lead.campaign}</span>}
+                <span className="tag tag-purple">👤 {lead.assignedTo||"Unassigned"}</span>
+              </div>
+            </>
+          )}
+          <div className="detail-tabs">
+            {["timeline","notes","calls","followup"].map(t=>(
+              <div key={t} className={`tab ${detailTab===t?"active":""}`} onClick={()=>setDetailTab(t)}>
+                {t.charAt(0).toUpperCase()+t.slice(1)}
+              </div>
+            ))}
+          </div>
+          {detailTab==="timeline"&&(
+            <div>
+              <div className="timeline-item"><div className="timeline-dot"/><div className="timeline-content"><div className="timeline-text">Lead created from <strong>{lead.source}</strong></div><div className="timeline-date">{lead.createdAt}</div></div></div>
+              {lead.notes.map((n,i)=><div key={i} className="timeline-item"><div className="timeline-dot" style={{background:"var(--yellow)"}}/><div className="timeline-content"><div className="timeline-text">Note: {n.text}</div><div className="timeline-date">{n.date}</div></div></div>)}
+              {lead.calls.map((c,i)=><div key={i} className="timeline-item"><div className="timeline-dot" style={{background:"var(--green)"}}/><div className="timeline-content"><div className="timeline-text">{c.type} call · {c.duration} · {c.outcome}</div><div className="timeline-date">{c.date}</div></div></div>)}
+            </div>
+          )}
+          {detailTab==="notes"&&(
+            <div>
+              {lead.notes.map((n,i)=><div key={i} style={{background:"var(--surface2)",borderRadius:8,padding:12,marginBottom:10}}><div style={{fontSize:13}}>{n.text}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>{n.date}</div></div>)}
+              {lead.notes.length===0&&<p style={{color:"var(--text3)",fontSize:13,marginBottom:14}}>No notes yet.</p>}
+              <div style={{display:"flex",gap:8,marginTop:12}}>
+                <input type="text" value={note} onChange={e=>setNote(e.target.value)} placeholder="Add a note..." style={{flex:1}} onKeyDown={e=>e.key==="Enter"&&addNote()}/>
+                <button className="btn btn-primary" onClick={addNote}>+ Add</button>
+              </div>
+            </div>
+          )}
+          {detailTab==="calls"&&(
+            <div>
+              {lead.calls.map((c,i)=><div key={i} style={{background:"var(--surface2)",borderRadius:8,padding:12,marginBottom:10}}><div style={{fontSize:13,fontWeight:600}}>📞 {c.type} · {c.duration}</div><div style={{fontSize:12,color:"var(--text3)"}}>{c.outcome} · {c.date}</div></div>)}
+              {lead.calls.length===0&&<p style={{color:"var(--text3)",fontSize:13,marginBottom:14}}>No calls logged yet.</p>}
+              <div style={{display:"flex",gap:8,marginTop:12}}>
+                <input type="text" value={callNote} onChange={e=>setCallNote(e.target.value)} placeholder="Call outcome..." style={{flex:1}}/>
+                <button className="btn btn-primary" onClick={addCall}>📞 Log Call</button>
+              </div>
+            </div>
+          )}
+          {detailTab==="followup"&&(
+            <div>
+              <div className="form-group"><label>Schedule Follow-up Date</label>
+                <input type="date" value={form.followUp||""} onChange={e=>{upd("followUp",e.target.value);setLeads(p=>p.map(l=>l.id===lead.id?{...l,followUp:e.target.value}:l))}}/>
+              </div>
+              <p style={{fontSize:12,color:"var(--text3)"}}>Current: {lead.followUp||"Not scheduled"}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddLeadModal({leads,setLeads,close,users}){
+  const [form,setForm]=useState({name:"",phone:"",email:"",source:"Meta Lead Ads",campaign:"",stage:"New Lead",assignedTo:"",value:0,followUp:""});
+  const set=(f,v)=>setForm(p=>({...p,[f]:v}));
+  const save=()=>{
+    if(!form.name||!form.phone)return alert("Name and phone are required");
+    setLeads(p=>[...p,{...form,id:Date.now(),createdAt:new Date().toISOString().split("T")[0],notes:[],calls:[],value:Number(form.value)}]);
+    close();
+  };
+  return (
+    <div className="modal-overlay" onClick={close}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header"><div className="modal-title">Add New Lead</div><button className="btn btn-ghost btn-sm" onClick={close}>✕</button></div>
+        <div className="modal-body">
+          <div className="form-row">
+            <div className="form-group"><label>Full Name *</label><input type="text" placeholder="Priya Sharma" value={form.name} onChange={e=>set("name",e.target.value)}/></div>
+            <div className="form-group"><label>Phone *</label><input type="tel" placeholder="9876543210" value={form.phone} onChange={e=>set("phone",e.target.value)}/></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Email</label><input type="email" placeholder="email@example.com" value={form.email} onChange={e=>set("email",e.target.value)}/></div>
+            <div className="form-group"><label>Value (₹)</label><input type="number" placeholder="25000" value={form.value} onChange={e=>set("value",e.target.value)}/></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Source</label><select value={form.source} onChange={e=>set("source",e.target.value)}>{SOURCES.map(s=><option key={s}>{s}</option>)}</select></div>
+            <div className="form-group"><label>Campaign</label><input type="text" placeholder="Summer Sale" value={form.campaign} onChange={e=>set("campaign",e.target.value)}/></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Stage</label><select value={form.stage} onChange={e=>set("stage",e.target.value)}>{STAGES.map(s=><option key={s}>{s}</option>)}</select></div>
+            <div className="form-group"><label>Assign To</label><select value={form.assignedTo} onChange={e=>set("assignedTo",e.target.value)}><option value="">Unassigned</option>{users.map(u=><option key={u.id}>{u.name.split(" ")[0]}</option>)}</select></div>
+          </div>
+          <div className="form-group"><label>Follow-up Date</label><input type="date" value={form.followUp} onChange={e=>set("followUp",e.target.value)}/></div>
+        </div>
+        <div className="modal-footer"><button className="btn btn-ghost" onClick={close}>Cancel</button><button className="btn btn-primary" onClick={save}>+ Add Lead</button></div>
+      </div>
+    </div>
+  );
+}
+
+function AddUserModal({accounts,setAccounts,close}){
+  const [form,setForm]=useState({name:"",email:"",password:"",role:"Sales"});
+  const save=()=>{
+    if(!form.name||!form.email||!form.password)return alert("Name, email and password are required");
+    if(accounts.find(a=>a.email.toLowerCase()===form.email.toLowerCase()))return alert("Email already exists!");
+    setAccounts(p=>[...p,{...form,id:Date.now()}]);
+    close();
+  };
+  return (
+    <div className="modal-overlay" onClick={close}>
+      <div className="modal" style={{maxWidth:440}} onClick={e=>e.stopPropagation()}>
+        <div className="modal-header"><div className="modal-title">Add New User</div><button className="btn btn-ghost btn-sm" onClick={close}>✕</button></div>
+        <div className="modal-body">
+          <div className="form-group"><label>Full Name *</label><input type="text" placeholder="Rahul Kumar" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/></div>
+          <div className="form-group"><label>Email * (used to login)</label><input type="email" placeholder="rahul@company.com" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/></div>
+          <div className="form-group"><label>Password * (they will use this to login)</label><input type="text" placeholder="Rahul@123" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))}/></div>
+          <div className="form-group"><label>Role</label><select value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}><option>Sales</option><option>Business Admin</option></select></div>
+          <div style={{background:"rgba(245,158,11,.08)",border:"1px solid rgba(245,158,11,.2)",borderRadius:8,padding:10,fontSize:12,color:"var(--yellow)"}}>
+            ℹ️ Share these credentials with the user so they can log in at your CRM URL.
+          </div>
+        </div>
+        <div className="modal-footer"><button className="btn btn-ghost" onClick={close}>Cancel</button><button className="btn btn-primary" onClick={save}>+ Create User</button></div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
