@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FreeLeadManagement CRM</title>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--surface3:#1f2d42;
+  --border:#1e2d45;--accent:#00d4ff;--accent2:#7c3aed;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --green:#10b981;--red:#ef4444;--yellow:#f59e0b;--purple:#8b5cf6;
+  --font:'Sora',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+input,select,textarea{font-family:var(--font)}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
+.logo-text{font-size:13px;font-weight:700;letter-spacing:.05em;color:var(--accent);text-transform:uppercase}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.sidebar-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;transition:all .15s;color:var(--text2);font-size:13px;font-weight:500;border:1px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(0,212,255,.08);color:var(--accent);border-color:rgba(0,212,255,.15)}
+.nav-section{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:10px 12px 4px}
+.sidebar-footer{padding:10px 8px;border-top:1px solid var(--border)}
+.user-info{padding:8px 10px;margin-bottom:6px}
+.user-name-s{font-size:12px;font-weight:700}
+.user-role-s{font-size:10px;color:var(--text3);margin-top:1px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:54px;min-height:54px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px}
+.page-title{font-size:15px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font)}
+.btn-primary{background:var(--accent);color:#000}.btn-primary:hover{background:#00bde6}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.btn-success{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+.btn-yellow{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.content{flex:1;overflow-y:auto;padding:22px}
+/* Stats */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.c1::before{background:linear-gradient(90deg,var(--accent),transparent)}
+.stat-card.c2::before{background:linear-gradient(90deg,var(--green),transparent)}
+.stat-card.c3::before{background:linear-gradient(90deg,var(--yellow),transparent)}
+.stat-card.c4::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.stat-value{font-size:26px;font-weight:700;margin:5px 0 3px;font-family:var(--mono)}
+.stat-sub{font-size:11px;color:var(--text3)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.card-title{font-size:13px;font-weight:700;margin-bottom:12px}
+/* Pipeline */
+.pipeline-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:12px;min-height:calc(100vh - 155px)}
+.pipeline-col{min-width:210px;width:210px;background:var(--surface);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;max-height:calc(100vh - 155px)}
+.col-header{padding:11px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.col-title{font-size:12px;font-weight:700}
+.col-count{font-size:11px;background:var(--surface2);color:var(--text3);padding:2px 7px;border-radius:20px;font-family:var(--mono)}
+.col-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.col-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:7px}
+.lead-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px;cursor:pointer;transition:all .15s}
+.lead-card:hover{border-color:var(--accent);background:var(--surface3)}
+.lead-name{font-size:12px;font-weight:600;margin-bottom:3px}
+.lead-phone{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:7px}
+.lead-meta{display:flex;align-items:center;justify-content:space-between}
+.wa-btn{width:24px;height:24px;border-radius:6px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;transition:all .15s;flex-shrink:0}
+.wa-btn:hover{background:rgba(37,211,102,.25)}
+.value-tag{font-size:10px;color:var(--green);font-family:var(--mono)}
+/* Table */
+.search-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:180px}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px 8px 34px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+.search-input:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px}
+select.filter-sel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 11px;color:var(--text);font-size:12px;outline:none;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:10px 13px;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:11px 13px;font-size:13px}
+tbody tr:last-child{border-bottom:none}
+.stage-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto}
+.modal-lg{max-width:720px}
+.modal-sm{max-width:420px}
+.modal-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-size:15px;font-weight:700}
+.modal-body{padding:18px 22px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+/* Forms */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],input[type=password],select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:72px}
+input[type=date]{cursor:pointer}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.5;cursor:pointer}
+/* Tabs */
+.detail-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab{padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--text3);transition:all .15s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* Timeline */
+.timeline-item{display:flex;gap:10px;margin-bottom:12px}
+.timeline-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.timeline-content{flex:1}
+.timeline-text{font-size:13px}
+.timeline-date{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+/* Tags */
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.tag-blue{background:rgba(0,212,255,.1);color:var(--accent)}
+.tag-green{background:rgba(16,185,129,.1);color:var(--green)}
+.tag-purple{background:rgba(124,58,237,.1);color:var(--purple)}
+.tag-gray{background:rgba(148,163,184,.1);color:var(--text2)}
+.tag-yellow{background:rgba(245,158,11,.1);color:var(--yellow)}
+.tag-red{background:rgba(239,68,68,.1);color:var(--red)}
+/* Login */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:38px;width:100%;max-width:420px}
+/* Misc */
+.divider{height:1px;background:var(--border);margin:14px 0}
+.w-full{width:100%}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px;color:var(--text3);gap:10px;font-size:13px}
+.notif-badge{background:var(--red);color:white;border-radius:50%;width:15px;height:15px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:-6px;margin-top:-6px}
+.bar-chart{display:flex;align-items:flex-end;gap:7px;height:90px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.bar{width:100%;border-radius:4px 4px 0 0}
+.bar-lbl{font-size:9px;color:var(--text3);text-align:center}
+.bar-val{font-size:9px;font-family:var(--mono);color:var(--text2)}
+/* Profile */
+.profile-avatar{width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:white;margin-bottom:16px}
+/* Business cards */
+.biz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.biz-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.biz-name{font-size:15px;font-weight:700;margin-bottom:3px}
+.biz-meta{font-size:12px;color:var(--text3);margin-bottom:12px}
+/* Import */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(0,212,255,.03)}
+.upload-zone-icon{font-size:36px;margin-bottom:10px}
+.upload-zone-text{font-size:13px;color:var(--text2);margin-bottom:6px}
+.upload-zone-sub{font-size:11px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const STAGES=["New Lead","Contacted","Interested","Demo","Proposal Shared","Follow-up","Not Interested","Converted","Lost"];
+const STAGE_COLORS={"New Lead":"#6366f1","Contacted":"#0ea5e9","Interested":"#f59e0b","Demo":"#8b5cf6","Proposal Shared":"#ec4899","Follow-up":"#f97316","Not Interested":"#94a3b8","Converted":"#10b981","Lost":"#ef4444"};
+const SOURCES=["Meta Lead Ads","Google Ads","Google Sheets","Excel Upload","Manual","Referral","Website"];
+
+// ── Storage helpers ───────────────────────────────────────────────────────────
+const LS={
+  get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+};
+
+// ── Seed Data ─────────────────────────────────────────────────────────────────
+const SEED_BUSINESSES=[
+  {id:"biz1",name:"Demo Business",adminName:"Anuj Sharma",email:"admin@demo.com",phone:"9876543210",password:"Admin@1234",active:true,createdAt:"2024-01-01"}
+];
+const SEED_USERS=[
+  {id:"u1",bizId:"biz1",name:"Rahul Kumar",email:"rahul@demo.com",phone:"9111111111",password:"Rahul@123",role:"Sales",active:true},
+  {id:"u2",bizId:"biz1",name:"Sneha Patel",email:"sneha@demo.com",phone:"9222222222",password:"Sneha@123",role:"Sales",active:true},
+];
+const SEED_LEADS=[
+  {id:"l1",bizId:"biz1",name:"Priya Sharma",phone:"9876543210",email:"priya@email.com",source:"Meta Lead Ads",campaign:"Summer Sale",stage:"New Lead",assignedTo:"u1",createdAt:"2024-01-15",value:15000,notes:[],followUp:"",calls:[]},
+  {id:"l2",bizId:"biz1",name:"Amit Gupta",phone:"9123456780",email:"amit@email.com",source:"Google Ads",campaign:"Brand Awareness",stage:"Contacted",assignedTo:"u2",createdAt:"2024-01-14",value:28000,notes:[{text:"Very interested",date:"2024-01-14"}],followUp:"2024-02-20",calls:[]},
+  {id:"l3",bizId:"biz1",name:"Kavya Reddy",phone:"9988776655",email:"kavya@email.com",source:"Referral",campaign:"",stage:"Interested",assignedTo:"u1",createdAt:"2024-01-13",value:45000,notes:[],followUp:"2024-02-18",calls:[{type:"Outgoing",duration:"5 min",outcome:"Positive",date:"2024-01-13"}]},
+  {id:"l4",bizId:"biz1",name:"Rohan Mehta",phone:"9765432109",email:"rohan@email.com",source:"Website",campaign:"",stage:"Demo",assignedTo:"u2",createdAt:"2024-01-12",value:32000,notes:[],followUp:"2024-02-19",calls:[]},
+  {id:"l5",bizId:"biz1",name:"Deepa Nair",phone:"9654321098",email:"deepa@email.com",source:"Meta Lead Ads",campaign:"New Year",stage:"Converted",assignedTo:"u1",createdAt:"2024-01-10",value:55000,notes:[],followUp:"",calls:[]},
+];
+
+function initData(){
+  if(!LS.get("flm_init",false)){
+    LS.set("flm_businesses",SEED_BUSINESSES);
+    LS.set("flm_users",SEED_USERS);
+    LS.set("flm_leads",SEED_LEADS);
+    LS.set("flm_init",true);
+  }
+}
+initData();
+
+// ── Small helpers ─────────────────────────────────────────────────────────────
+function StageBadge({stage}){
+  const c=STAGE_COLORS[stage]||"#94a3b8";
+  return <span className="stage-badge" style={{background:c+"18",color:c}}>{stage}</span>;
+}
+function RoleBadge({role}){
+  const map={"Super Admin":["var(--accent)","rgba(0,212,255,.1)"],"Business Admin":["var(--purple)","rgba(124,58,237,.1)"],"Sales":["var(--green)","rgba(16,185,129,.1)"]};
+  const [c,bg]=map[role]||["var(--text2)","var(--surface2)"];
+  return <span style={{background:bg,color:c,padding:"2px 8px",borderRadius:4,fontSize:11,fontWeight:700}}>{role}</span>;
+}
+
+// ── LOGIN PAGE ────────────────────────────────────────────────────────────────
+function LoginPage({onLogin}){
+  const [email,setEmail]=useState("");
+  const [pw,setPw]=useState("");
+  const [showPw,setShowPw]=useState(false);
+  const [error,setError]=useState("");
+  const [loading,setLoading]=useState(false);
+
+  const login=()=>{
+    setError("");
+    if(!email.trim()||!pw.trim()){setError("Please enter email and password.");return;}
+    setLoading(true);
+    setTimeout(()=>{
+      // Check Super Admin
+      if(email.trim().toLowerCase()==="superadmin@freeleadmanagement.com"&&pw==="SuperAdmin@1234"){
+        onLogin({id:"sa",name:"Super Admin",email:"superadmin@freeleadmanagement.com",role:"Super Admin",bizId:null});
+        setLoading(false);return;
+      }
+      // Check Business Admins
+      const bizs=LS.get("flm_businesses",[]);
+      const biz=bizs.find(b=>b.email.toLowerCase()===email.trim().toLowerCase()&&b.password===pw&&b.active);
+      if(biz){onLogin({id:"ba_"+biz.id,name:biz.adminName,email:biz.email,role:"Business Admin",bizId:biz.id,bizName:biz.name});setLoading(false);return;}
+      // Check Sales Users
+      const users=LS.get("flm_users",[]);
+      const user=users.find(u=>u.email.toLowerCase()===email.trim().toLowerCase()&&u.password===pw&&u.active);
+      if(user){
+        const b=bizs.find(b=>b.id===user.bizId);
+        onLogin({...user,role:user.role||"Sales",bizName:b?b.name:""});
+        setLoading(false);return;
+      }
+      setError("Incorrect email or password.");
+      setLoading(false);
+    },500);
+  };
+
+  return (
+    <div className="login-page">
+      <div style={{position:"absolute",width:500,height:500,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,212,255,.06) 0%,transparent 70%)",top:"50%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
+      <div className="login-box" style={{position:"relative",zIndex:1}}>
+        <div style={{textAlign:"center",marginBottom:28}}>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--accent)",letterSpacing:".12em",textTransform:"uppercase",fontFamily:"var(--mono)",marginBottom:8}}>● FREELEADMANAGEMENT</div>
+          <div style={{fontSize:22,fontWeight:800,marginBottom:5}}>Welcome back 👋</div>
+          <div style={{fontSize:13,color:"var(--text3)"}}>Sign in to your CRM account</div>
+        </div>
+        {error&&<div style={{background:"rgba(239,68,68,.1)",border:"1px solid rgba(239,68,68,.25)",borderRadius:8,padding:"9px 13px",fontSize:12,color:"var(--red)",marginBottom:14}}>⚠️ {error}</div>}
+        <div className="form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="your@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}/>
+        </div>
+        <div className="form-group">
+          <label>Password</label>
+          <div style={{position:"relative"}}>
+            <input type={showPw?"text":"password"} placeholder="Enter password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()} style={{paddingRight:42}}/>
+            <span onClick={()=>setShowPw(!showPw)} style={{position:"absolute",right:11,top:"50%",transform:"translateY(-50%)",cursor:"pointer",fontSize:15,userSelect:"none"}}>{showPw?"🙈":"👁️"}</span>
+          </div>
+        </div>
+        <button className="btn btn-primary" style={{width:"100%",padding:"11px",fontSize:14,justifyContent:"center",marginTop:2}} onClick={login} disabled={loading}>
+          {loading?"Signing in...":"Sign In →"}
+        </button>
+        <div style={{marginTop:20,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:13}}>
+          <div style={{fontSize:10,fontWeight:700,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8}}>Default Login Credentials</div>
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+            <div style={{fontSize:11}}><span style={{color:"var(--accent)",fontWeight:700}}>👑 Super Admin: </span><span style={{fontFamily:"var(--mono)",color:"var(--text3)"}}>superadmin@freeleadmanagement.com / SuperAdmin@1234</span></div>
+            <div style={{fontSize:11}}><span style={{color:"var(--purple)",fontWeight:700}}>🏢 Biz Admin: </span><span style={{fontFamily:"var(--mono)",color:"var(--text3)"}}>admin@demo.com / Admin@1234</span></div>
+            <div style={{fontSize:11}}><span style={{color:"var(--green)",fontWeight:700}}>👤 Sales: </span><span style={{fontFamily:"var(--mono)",color:"var(--text3)"}}>rahul@demo.com / Rahul@123</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MAIN APP ──────────────────────────────────────────────────────────────────
+function App(){
+  const [currentUser,setCurrentUser]=useState(null);
+  const [page,setPage]=useState("dashboard");
+  const [modal,setModal]=useState(null);
+  const [selectedLead,setSelectedLead]=useState(null);
+  const [detailTab,setDetailTab]=useState("timeline");
+  const [search,setSearch]=useState("");
+  const [filterStage,setFilterStage]=useState("All");
+  const [tick,setTick]=useState(0); // force re-render after storage changes
+
+  const refresh=()=>setTick(t=>t+1);
+
+  if(!currentUser) return <LoginPage onLogin={u=>{setCurrentUser(u);setPage("dashboard");}}/>;
+
+  const isSA=currentUser.role==="Super Admin";
+  const isBA=currentUser.role==="Business Admin";
+  const isSales=currentUser.role==="Sales";
+
+  const allLeads=LS.get("flm_leads",[]);
+  const bizLeads=isSA?allLeads:allLeads.filter(l=>l.bizId===currentUser.bizId);
+  const myLeads=isSales?bizLeads.filter(l=>l.assignedTo===currentUser.id):bizLeads;
+
+  const bizUsers=LS.get("flm_users",[]).filter(u=>!isSA&&u.bizId===currentUser.bizId);
+
+  const filteredLeads=myLeads.filter(l=>{
+    const ms=l.name.toLowerCase().includes(search.toLowerCase())||l.phone.includes(search);
+    const mst=filterStage==="All"||l.stage===filterStage;
+    return ms&&mst;
+  });
+
+  const stats={
+    total:myLeads.length,
+    converted:myLeads.filter(l=>l.stage==="Converted").length,
+    pipeline:myLeads.filter(l=>!["Converted","Lost"].includes(l.stage)).reduce((a,b)=>a+b.value,0),
+    followUps:myLeads.filter(l=>l.followUp&&l.followUp>=new Date().toISOString().split("T")[0]).length,
+  };
+
+  const openLead=(lead)=>{setSelectedLead(lead);setModal("leadDetail");setDetailTab("timeline");};
+  const openWA=(phone,e)=>{if(e)e.stopPropagation();window.open(`https://wa.me/91${phone}`,"_blank");};
+  const logout=()=>{setCurrentUser(null);setPage("dashboard");};
+
+  const saveLeads=(leads)=>{LS.set("flm_leads",leads);refresh();};
+
+  // Nav items based on role
+  const navItems=[
+    ...(isSA?[
+      {key:"dashboard",label:"Dashboard",icon:"🏠"},
+      {key:"businesses",label:"Businesses",icon:"🏢"},
+    ]:[
+      {key:"dashboard",label:"Dashboard",icon:"🏠"},
+      {key:"leads",label:"All Leads",icon:"👥"},
+      {key:"pipeline",label:"Pipeline",icon:"📋"},
+      ...(isBA?[{key:"team",label:"Team & Users",icon:"👤"},{key:"import",label:"Import Leads",icon:"📥"}]:[{key:"import",label:"Import Leads",icon:"📥"}]),
+    ]),
+    {key:"profile",label:"My Profile",icon:"⚙️"},
+  ];
+
+  const pageTitles={dashboard:"Dashboard",businesses:"Businesses",leads:"All Leads",pipeline:"Pipeline Board",team:"Team & Users",import:"Import Leads",profile:"My Profile"};
+
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-text">FreeLeadMgmt</div>
+          <div className="logo-sub">v2.0 · CRM Platform</div>
+        </div>
+        {!isSA&&<div style={{padding:"10px 12px 4px",borderBottom:"1px solid var(--border)",marginBottom:4}}>
+          <div style={{fontSize:10,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".06em"}}>Business</div>
+          <div style={{fontSize:12,fontWeight:700,color:"var(--accent)",marginTop:2}}>{currentUser.bizName}</div>
+        </div>}
+        <nav className="sidebar-nav">
+          {navItems.map(n=>(
+            <div key={n.key} className={`nav-item ${page===n.key?"active":""}`} onClick={()=>setPage(n.key)}>
+              <span>{n.icon}</span><span>{n.label}</span>
+            </div>
+          ))}
+        </nav>
+        <div className="sidebar-footer">
+          <div style={{padding:"4px 10px 8px"}}>
+            <div style={{fontSize:12,fontWeight:700}}>{currentUser.name}</div>
+            <div style={{marginTop:3}}><RoleBadge role={currentUser.role}/></div>
+          </div>
+          <button className="btn btn-ghost btn-sm" style={{width:"100%",justifyContent:"center"}} onClick={logout}>🚪 Logout</button>
+        </div>
+      </aside>
+
+      <div className="main">
+        <header className="topbar">
+          <div className="page-title">{pageTitles[page]||page}</div>
+          <div className="topbar-right">
+            {!isSA&&<div style={{position:"relative",cursor:"pointer",fontSize:18}}>🔔<div className="notif-badge">{stats.followUps}</div></div>}
+            {!isSA&&page!=="profile"&&<button className="btn btn-primary" onClick={()=>setModal("addLead")}>+ Add Lead</button>}
+            {isSA&&page==="businesses"&&<button className="btn btn-primary" onClick={()=>setModal("addBusiness")}>+ New Business</button>}
+          </div>
+        </header>
+        <div className="content">
+          {page==="dashboard"&&<Dashboard stats={stats} leads={myLeads} openLead={openLead} openWA={openWA} isSA={isSA} tick={tick}/>}
+          {page==="businesses"&&isSA&&<BusinessesPage setModal={setModal} refresh={refresh} tick={tick}/>}
+          {page==="leads"&&!isSA&&<LeadsPage leads={filteredLeads} search={search} setSearch={setSearch} filterStage={filterStage} setFilterStage={setFilterStage} openLead={openLead} openWA={openWA} allLeads={allLeads} saveLeads={saveLeads}/>}
+          {page==="pipeline"&&!isSA&&<PipelinePage leads={myLeads} allLeads={allLeads} saveLeads={saveLeads} openLead={openLead} openWA={openWA}/>}
+          {page==="team"&&isBA&&<TeamPage bizId={currentUser.bizId} setModal={setModal} refresh={refresh} tick={tick}/>}
+          {page==="import"&&<ImportPage bizId={currentUser.bizId} bizUsers={bizUsers} allLeads={allLeads} saveLeads={saveLeads}/>}
+          {page==="profile"&&<ProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser}/>}
+        </div>
+      </div>
+
+      {modal==="addLead"&&<AddLeadModal bizId={currentUser.bizId} bizUsers={bizUsers} allLeads={allLeads} saveLeads={saveLeads} currentUser={currentUser} close={()=>setModal(null)}/>}
+      {modal==="leadDetail"&&selectedLead&&<LeadDetailModal leadId={selectedLead.id} allLeads={allLeads} saveLeads={saveLeads} close={()=>{setModal(null);setSelectedLead(null);}} detailTab={detailTab} setDetailTab={setDetailTab} bizUsers={bizUsers} openWA={openWA} currentUser={currentUser}/>}
+      {modal==="addBusiness"&&<AddBusinessModal close={()=>{setModal(null);refresh();}}/>}
+      {modal==="addUser"&&<AddUserModal bizId={currentUser.bizId} close={()=>{setModal(null);refresh();}}/>}
+    </div>
+  );
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function Dashboard({stats,leads,openLead,openWA,isSA,tick}){
+  const businesses=LS.get("flm_businesses",[]);
+  const allLeads=LS.get("flm_leads",[]);
+  const stageData=STAGES.map(s=>({stage:s,count:leads.filter(l=>l.stage===s).length}));
+  const maxCount=Math.max(...stageData.map(s=>s.count),1);
+  const recent=[...leads].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
+
+  if(isSA){
+    const totalBiz=businesses.length;
+    const totalLeads=allLeads.length;
+    const totalUsers=LS.get("flm_users",[]).length;
+    return (
+      <>
+        <div className="stat-grid">
+          <div className="stat-card c1"><div className="stat-label">Businesses</div><div className="stat-value">{totalBiz}</div><div className="stat-sub">Active accounts</div></div>
+          <div className="stat-card c2"><div className="stat-label">Total Leads</div><div className="stat-value" style={{color:"var(--green)"}}>{totalLeads}</div><div className="stat-sub">Across all businesses</div></div>
+          <div className="stat-card c3"><div className="stat-label">Total Users</div><div className="stat-value" style={{color:"var(--yellow)"}}>{totalUsers}</div><div className="stat-sub">Sales team members</div></div>
+          <div className="stat-card c4"><div className="stat-label">Converted</div><div className="stat-value" style={{color:"var(--purple)"}}>{allLeads.filter(l=>l.stage==="Converted").length}</div><div className="stat-sub">All time</div></div>
+        </div>
+        <div className="card">
+          <div className="card-title">Business Overview</div>
+          <table><thead><tr><th>Business</th><th>Admin</th><th>Email</th><th>Leads</th><th>Users</th><th>Status</th></tr></thead>
+          <tbody>{businesses.map(b=>(
+            <tr key={b.id}>
+              <td style={{fontWeight:700}}>{b.name}</td>
+              <td>{b.adminName}</td>
+              <td style={{fontSize:12,color:"var(--text3)",fontFamily:"var(--mono)"}}>{b.email}</td>
+              <td style={{fontFamily:"var(--mono)"}}>{allLeads.filter(l=>l.bizId===b.id).length}</td>
+              <td style={{fontFamily:"var(--mono)"}}>{LS.get("flm_users",[]).filter(u=>u.bizId===b.id).length}</td>
+              <td><span style={{background:b.active?"rgba(16,185,129,.1)":"rgba(239,68,68,.1)",color:b.active?"var(--green)":"var(--red)",padding:"2px 8px",borderRadius:4,fontSize:11,fontWeight:700}}>{b.active?"Active":"Suspended"}</span></td>
+            </tr>
+          ))}</tbody></table>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="stat-grid">
+        <div className="stat-card c1"><div className="stat-label">Total Leads</div><div className="stat-value">{stats.total}</div><div className="stat-sub">All time</div></div>
+        <div className="stat-card c2"><div className="stat-label">Converted</div><div className="stat-value" style={{color:"var(--green)"}}>{stats.converted}</div><div className="stat-sub">{stats.total?Math.round(stats.converted/stats.total*100):0}% rate</div></div>
+        <div className="stat-card c3"><div className="stat-label">Pipeline Value</div><div className="stat-value" style={{color:"var(--yellow)"}}>₹{(stats.pipeline/1000).toFixed(0)}K</div><div className="stat-sub">Active deals</div></div>
+        <div className="stat-card c4"><div className="stat-label">Follow-ups Due</div><div className="stat-value" style={{color:"var(--purple)"}}>{stats.followUps}</div><div className="stat-sub">Upcoming</div></div>
+      </div>
+      <div className="grid-2" style={{marginBottom:14}}>
+        <div className="card">
+          <div className="card-title">Pipeline Overview</div>
+          <div className="bar-chart">
+            {stageData.filter(s=>!["Not Interested","Lost"].includes(s.stage)).map(s=>(
+              <div key={s.stage} className="bar-wrap">
+                <div className="bar-val">{s.count}</div>
+                <div className="bar" style={{height:`${(s.count/maxCount)*75}px`,minHeight:4,background:STAGE_COLORS[s.stage]+"99"}}/>
+                <div className="bar-lbl">{s.stage.split(" ")[0]}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="card">
+          <div className="card-title">Lead Sources</div>
+          {Object.entries(leads.reduce((acc,l)=>{acc[l.source]=(acc[l.source]||0)+1;return acc;},{})).map(([src,cnt])=>(
+            <div key={src} style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+              <div style={{flex:1,fontSize:12}}>{src}</div>
+              <div style={{flex:2,height:7,background:"var(--surface2)",borderRadius:4,overflow:"hidden"}}>
+                <div style={{width:`${leads.length?(cnt/leads.length)*100:0}%`,height:"100%",background:"var(--accent)",borderRadius:4,opacity:.7}}/>
+              </div>
+              <div style={{fontSize:11,color:"var(--text3)",fontFamily:"var(--mono)",width:18,textAlign:"right"}}>{cnt}</div>
+            </div>
+          ))}
+          {leads.length===0&&<div style={{color:"var(--text3)",fontSize:12}}>No leads yet</div>}
+        </div>
+      </div>
+      <div className="card" style={{padding:0}}>
+        <div style={{padding:"13px 18px 0",fontWeight:700,fontSize:13}}>Recent Leads</div>
+        <table><thead><tr><th>Name</th><th>Phone</th><th>Stage</th><th>Value</th><th>WhatsApp</th></tr></thead>
+        <tbody>
+          {recent.length===0&&<tr><td colSpan={5}><div className="empty-state">No leads yet</div></td></tr>}
+          {recent.map(l=>(
+            <tr key={l.id} onClick={()=>openLead(l)} style={{cursor:"pointer"}}>
+              <td style={{fontWeight:600}}>{l.name}</td>
+              <td style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--text3)"}}>{l.phone}</td>
+              <td><StageBadge stage={l.stage}/></td>
+              <td style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>₹{l.value.toLocaleString()}</td>
+              <td><div className="wa-btn" onClick={e=>openWA(l.phone,e)}>💬</div></td>
+            </tr>
+          ))}
+        </tbody></table>
+      </div>
+    </>
+  );
+}
+
+// ── BUSINESSES PAGE (Super Admin) ─────────────────────────────────────────────
+function BusinessesPage({setModal,refresh,tick}){
+  const businesses=LS.get("flm_businesses",[]);
+  const allLeads=LS.get("flm_leads",[]);
+  const allUsers=LS.get("flm_users",[]);
+
+  const toggleActive=(id)=>{
+    const updated=businesses.map(b=>b.id===id?{...b,active:!b.active}:b);
+    LS.set("flm_businesses",updated);refresh();
+  };
+  const deleteBiz=(id)=>{
+    if(!window.confirm("Delete this business and ALL its data?"))return;
+    LS.set("flm_businesses",businesses.filter(b=>b.id!==id));
+    LS.set("flm_users",allUsers.filter(u=>u.bizId!==id));
+    LS.set("flm_leads",allLeads.filter(l=>l.bizId!==id));
+    refresh();
+  };
+
+  return (
+    <>
+      <div className="biz-grid">
+        {businesses.map(b=>(
+          <div key={b.id} className="biz-card">
+            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
+              <div>
+                <div className="biz-name">{b.name}</div>
+                <div className="biz-meta">Admin: {b.adminName}</div>
+              </div>
+              <span style={{background:b.active?"rgba(16,185,129,.1)":"rgba(239,68,68,.1)",color:b.active?"var(--green)":"var(--red)",padding:"3px 9px",borderRadius:20,fontSize:11,fontWeight:700}}>{b.active?"Active":"Suspended"}</span>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:14,fontSize:12,color:"var(--text3)"}}>
+              <div>📧 {b.email}</div>
+              <div>📱 {b.phone}</div>
+              <div>📅 Created: {b.createdAt}</div>
+            </div>
+            <div style={{display:"flex",gap:8,marginBottom:12}}>
+              <div style={{flex:1,background:"var(--surface2)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
+                <div style={{fontSize:16,fontWeight:700,fontFamily:"var(--mono)"}}>{allLeads.filter(l=>l.bizId===b.id).length}</div>
+                <div style={{fontSize:10,color:"var(--text3)"}}>Leads</div>
+              </div>
+              <div style={{flex:1,background:"var(--surface2)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
+                <div style={{fontSize:16,fontWeight:700,fontFamily:"var(--mono)"}}>{allUsers.filter(u=>u.bizId===b.id).length}</div>
+                <div style={{fontSize:10,color:"var(--text3)"}}>Users</div>
+              </div>
+              <div style={{flex:1,background:"var(--surface2)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
+                <div style={{fontSize:16,fontWeight:700,fontFamily:"var(--mono)",color:"var(--green)"}}>{allLeads.filter(l=>l.bizId===b.id&&l.stage==="Converted").length}</div>
+                <div style={{fontSize:10,color:"var(--text3)"}}>Converted</div>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:6}}>
+              <button className="btn btn-sm btn-ghost" style={{flex:1,justifyContent:"center"}} onClick={()=>toggleActive(b.id)}>{b.active?"⏸ Suspend":"▶ Activate"}</button>
+              <button className="btn btn-sm btn-danger" onClick={()=>deleteBiz(b.id)}>🗑</button>
+            </div>
+          </div>
+        ))}
+        {businesses.length===0&&<div className="empty-state">No businesses yet. Create your first one!</div>}
+      </div>
+    </>
+  );
+}
+
+// ── LEADS PAGE ────────────────────────────────────────────────────────────────
+function LeadsPage({leads,search,setSearch,filterStage,setFilterStage,openLead,openWA,allLeads,saveLeads}){
+  const del=(id,e)=>{e.stopPropagation();if(window.confirm("Move to trash?"))saveLeads(allLeads.filter(l=>l.id!==id));};
+  return (
+    <>
+      <div className="search-bar">
+        <div className="search-wrap">
+          <span className="search-icon">🔍</span>
+          <input className="search-input" placeholder="Search name or phone..." value={search} onChange={e=>setSearch(e.target.value)}/>
+        </div>
+        <select className="filter-sel" value={filterStage} onChange={e=>setFilterStage(e.target.value)}>
+          <option>All</option>{STAGES.map(s=><option key={s}>{s}</option>)}
+        </select>
+        <span style={{fontSize:11,color:"var(--text3)"}}>{leads.length} leads</span>
+      </div>
+      <div className="card" style={{padding:0}}>
+        <table><thead><tr><th>Name</th><th>Phone</th><th>Source</th><th>Stage</th><th>Value</th><th>Follow-up</th><th>Actions</th></tr></thead>
+        <tbody>
+          {leads.length===0&&<tr><td colSpan={7}><div className="empty-state">No leads found</div></td></tr>}
+          {leads.map(l=>(
+            <tr key={l.id} onClick={()=>openLead(l)} style={{cursor:"pointer"}}>
+              <td style={{fontWeight:600}}>{l.name}</td>
+              <td style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--text3)"}}>{l.phone}</td>
+              <td><span className="tag tag-blue">{l.source}</span></td>
+              <td><StageBadge stage={l.stage}/></td>
+              <td style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>₹{l.value.toLocaleString()}</td>
+              <td style={{fontFamily:"var(--mono)",fontSize:11,color:l.followUp?"var(--yellow)":"var(--text3)"}}>{l.followUp||"—"}</td>
+              <td onClick={e=>e.stopPropagation()}>
+                <div style={{display:"flex",gap:5}}>
+                  <div className="wa-btn" onClick={e=>openWA(l.phone,e)}>💬</div>
+                  <button className="btn btn-sm btn-ghost" onClick={()=>openLead(l)}>✏️</button>
+                  <button className="btn btn-sm btn-danger" onClick={e=>del(l.id,e)}>🗑</button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody></table>
+      </div>
+    </>
+  );
+}
+
+// ── PIPELINE PAGE ─────────────────────────────────────────────────────────────
+function PipelinePage({leads,allLeads,saveLeads,openLead,openWA}){
+  const [dragging,setDragging]=useState(null);
+  const [dragOver,setDragOver]=useState(null);
+  const onDragStart=(e,lead)=>{setDragging(lead);e.dataTransfer.effectAllowed="move";};
+  const onDragOver=(e,stage)=>{e.preventDefault();setDragOver(stage);};
+  const onDrop=(e,stage)=>{
+    e.preventDefault();
+    if(dragging&&dragging.stage!==stage){
+      saveLeads(allLeads.map(l=>l.id===dragging.id?{...l,stage}:l));
+    }
+    setDragging(null);setDragOver(null);
+  };
+  return (
+    <div className="pipeline-scroll">
+      {STAGES.map(stage=>{
+        const sl=leads.filter(l=>l.stage===stage);
+        return (
+          <div key={stage} className="pipeline-col" style={{borderColor:dragOver===stage?STAGE_COLORS[stage]:undefined}}
+            onDragOver={e=>onDragOver(e,stage)} onDrop={e=>onDrop(e,stage)} onDragLeave={()=>setDragOver(null)}>
+            <div className="col-header">
+              <div style={{display:"flex",alignItems:"center",gap:7}}>
+                <div className="col-dot" style={{background:STAGE_COLORS[stage]}}/>
+                <span className="col-title">{stage}</span>
+              </div>
+              <span className="col-count">{sl.length}</span>
+            </div>
+            <div className="col-body">
+              {sl.map(lead=>(
+                <div key={lead.id} className="lead-card" draggable onDragStart={e=>onDragStart(e,lead)} onClick={()=>openLead(lead)}>
+                  <div className="lead-name">{lead.name}</div>
+                  <div className="lead-phone">{lead.phone}</div>
+                  <div className="lead-meta">
+                    <span className="value-tag">₹{(lead.value/1000).toFixed(1)}K</span>
+                    <div className="wa-btn" onClick={e=>openWA(lead.phone,e)}>💬</div>
+                  </div>
+                  {lead.followUp&&<div style={{fontSize:10,color:"var(--yellow)",marginTop:5}}>📅 {lead.followUp}</div>}
+                </div>
+              ))}
+              {sl.length===0&&<div style={{textAlign:"center",color:"var(--text3)",fontSize:11,padding:"18px 0"}}>Drop here</div>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── TEAM PAGE (Business Admin) ────────────────────────────────────────────────
+function TeamPage({bizId,setModal,refresh,tick}){
+  const users=LS.get("flm_users",[]).filter(u=>u.bizId===bizId);
+  const leads=LS.get("flm_leads",[]).filter(l=>l.bizId===bizId);
+  const [editingId,setEditingId]=useState(null);
+  const [editPw,setEditPw]=useState("");
+
+  const removeUser=(id)=>{
+    if(!window.confirm("Remove this user?"))return;
+    LS.set("flm_users",LS.get("flm_users",[]).filter(u=>u.id!==id));
+    refresh();
+  };
+  const updatePw=(id)=>{
+    if(!editPw.trim()){alert("Enter a new password");return;}
+    LS.set("flm_users",LS.get("flm_users",[]).map(u=>u.id===id?{...u,password:editPw}:u));
+    setEditingId(null);setEditPw("");alert("Password updated!");refresh();
+  };
+
+  return (
+    <>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{fontSize:13,color:"var(--text3)"}}>{users.length} team members</div>
+        <button className="btn btn-primary" onClick={()=>setModal("addUser")}>+ Add User</button>
+      </div>
+      <div className="card" style={{padding:0}}>
+        <table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Leads</th><th>Converted</th><th>Change Password</th><th>Actions</th></tr></thead>
+        <tbody>
+          {users.map(u=>(
+            <tr key={u.id}>
+              <td style={{fontWeight:600}}>{u.name}</td>
+              <td style={{fontSize:12,color:"var(--text3)",fontFamily:"var(--mono)"}}>{u.email}</td>
+              <td style={{fontSize:12,fontFamily:"var(--mono)"}}>{u.phone}</td>
+              <td><RoleBadge role={u.role||"Sales"}/></td>
+              <td style={{fontFamily:"var(--mono)"}}>{leads.filter(l=>l.assignedTo===u.id).length}</td>
+              <td style={{fontFamily:"var(--mono)",color:"var(--green)"}}>{leads.filter(l=>l.assignedTo===u.id&&l.stage==="Converted").length}</td>
+              <td>
+                {editingId===u.id?(
+                  <div style={{display:"flex",gap:5}}>
+                    <input type="text" value={editPw} onChange={e=>setEditPw(e.target.value)} placeholder="New password" style={{width:120,padding:"4px 8px",fontSize:12}}/>
+                    <button className="btn btn-sm btn-primary" onClick={()=>updatePw(u.id)}>Save</button>
+                    <button className="btn btn-sm btn-ghost" onClick={()=>setEditingId(null)}>✕</button>
+                  </div>
+                ):(
+                  <button className="btn btn-sm btn-ghost" onClick={()=>{setEditingId(u.id);setEditPw("");}}>🔑 Change</button>
+                )}
+              </td>
+              <td><button className="btn btn-sm btn-danger" onClick={()=>removeUser(u.id)}>🗑 Remove</button></td>
+            </tr>
+          ))}
+          {users.length===0&&<tr><td colSpan={8}><div className="empty-state">No users yet</div></td></tr>}
+        </tbody></table>
+      </div>
+    </>
+  );
+}
+
+// ── IMPORT LEADS PAGE ─────────────────────────────────────────────────────────
+function ImportPage({bizId,bizUsers,allLeads,saveLeads}){
+  const [dragOver,setDragOver]=useState(false);
+  const [preview,setPreview]=useState(null);
+  const [importing,setImporting]=useState(false);
+  const [done,setDone]=useState(null);
+  const fileRef=useRef();
+
+  const downloadTemplate=()=>{
+    const ws=XLSX.utils.aoa_to_sheet([
+      ["Name","Phone","Email","Source","Campaign","Stage","Value","Follow-up Date","Notes"],
+      ["Priya Sharma","9876543210","priya@email.com","Meta Lead Ads","Summer Sale","New Lead","15000","2024-03-01","Interested in premium"],
+      ["Amit Gupta","9123456780","amit@email.com","Google Ads","Brand Campaign","Contacted","28000","","Follow up next week"],
+    ]);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,"Leads");
+    XLSX.writeFile(wb,"FreeLeadManagement_Import_Template.xlsx");
+  };
+
+  const parseFile=(file)=>{
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:"array"});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1});
+      if(rows.length<2){alert("File is empty or invalid.");return;}
+      const headers=rows[0].map(h=>(h||"").toString().toLowerCase().trim());
+      const dataRows=rows.slice(1).filter(r=>r.some(c=>c));
+      const leads=dataRows.map((r,i)=>({
+        id:"imp_"+Date.now()+"_"+i,
+        bizId,
+        name:r[headers.indexOf("name")]||"",
+        phone:(r[headers.indexOf("phone")]||"").toString(),
+        email:r[headers.indexOf("email")]||"",
+        source:r[headers.indexOf("source")]||"Excel Upload",
+        campaign:r[headers.indexOf("campaign")]||"",
+        stage:STAGES.includes(r[headers.indexOf("stage")])?r[headers.indexOf("stage")]:"New Lead",
+        value:Number(r[headers.indexOf("value")])||0,
+        followUp:r[headers.indexOf("follow-up date")]||r[headers.indexOf("followup date")]||"",
+        notes:r[headers.indexOf("notes")]?[{text:r[headers.indexOf("notes")],date:new Date().toISOString().split("T")[0]}]:[],
+        calls:[],
+        assignedTo:"",
+        createdAt:new Date().toISOString().split("T")[0],
+      })).filter(l=>l.name&&l.phone);
+      setPreview(leads);
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleFile=(e)=>{const f=e.target.files[0];if(f)parseFile(f);};
+  const handleDrop=(e)=>{e.preventDefault();setDragOver(false);const f=e.dataTransfer.files[0];if(f)parseFile(f);};
+
+  const doImport=()=>{
+    setImporting(true);
+    setTimeout(()=>{
+      saveLeads([...allLeads,...preview]);
+      setDone(preview.length);
+      setPreview(null);
+      setImporting(false);
+    },600);
+  };
+
+  return (
+    <div style={{maxWidth:700}}>
+      <div className="card" style={{marginBottom:16}}>
+        <div className="card-title">📥 Import Leads from Excel</div>
+        <p style={{fontSize:13,color:"var(--text3)",marginBottom:16}}>Download the template, fill in your leads, then upload the file below. All leads will be imported instantly.</p>
+        <button className="btn btn-success" onClick={downloadTemplate}>⬇️ Download Excel Template</button>
+      </div>
+
+      {!preview&&!done&&(
+        <div className="card">
+          <div className="card-title">Upload File</div>
+          <div className={`upload-zone ${dragOver?"drag":""}`}
+            onClick={()=>fileRef.current.click()}
+            onDragOver={e=>{e.preventDefault();setDragOver(true);}}
+            onDragLeave={()=>setDragOver(false)}
+            onDrop={handleDrop}>
+            <div className="upload-zone-icon">📊</div>
+            <div className="upload-zone-text">Click to upload or drag & drop your Excel file</div>
+            <div className="upload-zone-sub">Supports .xlsx and .xls files</div>
+          </div>
+          <input type="file" accept=".xlsx,.xls" ref={fileRef} style={{display:"none"}} onChange={handleFile}/>
+        </div>
+      )}
+
+      {preview&&(
+        <div className="card">
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+            <div className="card-title" style={{margin:0}}>Preview — {preview.length} leads found</div>
+            <div style={{display:"flex",gap:8}}>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setPreview(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={doImport} disabled={importing}>{importing?"Importing...":"✅ Import All"}</button>
+            </div>
+          </div>
+          <div style={{maxHeight:300,overflowY:"auto"}}>
+            <table><thead><tr><th>Name</th><th>Phone</th><th>Source</th><th>Stage</th><th>Value</th></tr></thead>
+            <tbody>{preview.slice(0,20).map((l,i)=>(
+              <tr key={i}>
+                <td style={{fontWeight:600}}>{l.name}</td>
+                <td style={{fontFamily:"var(--mono)",fontSize:12}}>{l.phone}</td>
+                <td><span className="tag tag-blue">{l.source}</span></td>
+                <td><StageBadge stage={l.stage}/></td>
+                <td style={{color:"var(--green)",fontFamily:"var(--mono)",fontSize:12}}>₹{l.value.toLocaleString()}</td>
+              </tr>
+            ))}</tbody></table>
+          </div>
+          {preview.length>20&&<div style={{fontSize:12,color:"var(--text3)",marginTop:8,textAlign:"center"}}>...and {preview.length-20} more rows</div>}
+        </div>
+      )}
+
+      {done&&(
+        <div style={{background:"rgba(16,185,129,.08)",border:"1px solid rgba(16,185,129,.2)",borderRadius:12,padding:24,textAlign:"center"}}>
+          <div style={{fontSize:32,marginBottom:8}}>🎉</div>
+          <div style={{fontSize:16,fontWeight:700,color:"var(--green)",marginBottom:6}}>{done} leads imported successfully!</div>
+          <div style={{fontSize:13,color:"var(--text3)",marginBottom:16}}>Go to All Leads to see them.</div>
+          <button className="btn btn-primary" onClick={()=>setDone(null)}>Import More</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── PROFILE PAGE ──────────────────────────────────────────────────────────────
+function ProfilePage({currentUser,setCurrentUser}){
+  const [oldPw,setOldPw]=useState("");
+  const [newPw,setNewPw]=useState("");
+  const [confirmPw,setConfirmPw]=useState("");
+  const [msg,setMsg]=useState(null);
+  const [showOld,setShowOld]=useState(false);
+  const [showNew,setShowNew]=useState(false);
+
+  const changePw=()=>{
+    setMsg(null);
+    if(!oldPw||!newPw||!confirmPw){setMsg({type:"error",text:"All fields are required."});return;}
+    if(newPw!==confirmPw){setMsg({type:"error",text:"New passwords do not match."});return;}
+    if(newPw.length<6){setMsg({type:"error",text:"Password must be at least 6 characters."});return;}
+
+    if(currentUser.role==="Business Admin"){
+      const bizs=LS.get("flm_businesses",[]);
+      const biz=bizs.find(b=>b.id===currentUser.bizId);
+      if(!biz||biz.password!==oldPw){setMsg({type:"error",text:"Current password is incorrect."});return;}
+      LS.set("flm_businesses",bizs.map(b=>b.id===currentUser.bizId?{...b,password:newPw}:b));
+    } else if(currentUser.role==="Sales"||currentUser.role==="Business Admin"){
+      const users=LS.get("flm_users",[]);
+      const user=users.find(u=>u.id===currentUser.id);
+      if(!user||user.password!==oldPw){setMsg({type:"error",text:"Current password is incorrect."});return;}
+      LS.set("flm_users",users.map(u=>u.id===currentUser.id?{...u,password:newPw}:u));
+    } else {
+      if(oldPw!=="SuperAdmin@1234"){setMsg({type:"error",text:"Current password is incorrect."});return;}
+    }
+    setOldPw("");setNewPw("");setConfirmPw("");
+    setMsg({type:"success",text:"Password changed successfully! Use your new password next time you log in."});
+  };
+
+  return (
+    <div style={{maxWidth:480}}>
+      <div className="card" style={{marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
+          <div className="profile-avatar">{currentUser.name[0]}</div>
+          <div>
+            <div style={{fontSize:18,fontWeight:700}}>{currentUser.name}</div>
+            <div style={{marginTop:5}}><RoleBadge role={currentUser.role}/></div>
+            {currentUser.bizName&&<div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>🏢 {currentUser.bizName}</div>}
+            <div style={{fontSize:12,color:"var(--text3)",marginTop:3,fontFamily:"var(--mono)"}}>{currentUser.email}</div>
+          </div>
+        </div>
+        <div className="divider"/>
+        <div style={{fontSize:14,fontWeight:700,marginBottom:14}}>🔑 Change Password</div>
+        {msg&&<div style={{background:msg.type==="error"?"rgba(239,68,68,.1)":"rgba(16,185,129,.1)",border:`1px solid ${msg.type==="error"?"rgba(239,68,68,.25)":"rgba(16,185,129,.25)"}`,borderRadius:8,padding:"9px 13px",fontSize:12,color:msg.type==="error"?"var(--red)":"var(--green)",marginBottom:14}}>{msg.type==="error"?"⚠️":"✅"} {msg.text}</div>}
+        <div className="form-group">
+          <label>Current Password</label>
+          <div style={{position:"relative"}}>
+            <input type={showOld?"text":"password"} placeholder="Enter current password" value={oldPw} onChange={e=>setOldPw(e.target.value)} style={{paddingRight:42}}/>
+            <span onClick={()=>setShowOld(!showOld)} style={{position:"absolute",right:11,top:"50%",transform:"translateY(-50%)",cursor:"pointer",fontSize:14}}>  {showOld?"🙈":"👁️"}</span>
+          </div>
+        </div>
+        <div className="form-group">
+          <label>New Password</label>
+          <div style={{position:"relative"}}>
+            <input type={showNew?"text":"password"} placeholder="Enter new password (min 6 chars)" value={newPw} onChange={e=>setNewPw(e.target.value)} style={{paddingRight:42}}/>
+            <span onClick={()=>setShowNew(!showNew)} style={{position:"absolute",right:11,top:"50%",transform:"translateY(-50%)",cursor:"pointer",fontSize:14}}>{showNew?"🙈":"👁️"}</span>
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Confirm New Password</label>
+          <input type="password" placeholder="Re-enter new password" value={confirmPw} onChange={e=>setConfirmPw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&changePw()}/>
+        </div>
+        <button className="btn btn-primary" style={{width:"100%",justifyContent:"center",padding:"10px"}} onClick={changePw}>Update Password</button>
+      </div>
+    </div>
+  );
+}
+
+// ── ADD BUSINESS MODAL (Super Admin) ──────────────────────────────────────────
+function AddBusinessModal({close}){
+  const [form,setForm]=useState({name:"",adminName:"",email:"",phone:"",password:"Admin@1234"});
+  const set=(f,v)=>setForm(p=>({...p,[f]:v}));
+  const save=()=>{
+    if(!form.name||!form.adminName||!form.email||!form.phone||!form.password){alert("All fields are required.");return;}
+    const bizs=LS.get("flm_businesses",[]);
+    if(bizs.find(b=>b.email.toLowerCase()===form.email.toLowerCase())){alert("Email already exists!");return;}
+    LS.set("flm_businesses",[...bizs,{...form,id:"biz_"+Date.now(),active:true,createdAt:new Date().toISOString().split("T")[0]}]);
+    close();
+  };
+  return (
+    <div className="modal-overlay" onClick={close}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header"><div className="modal-title">🏢 Create New Business</div><button className="btn btn-ghost btn-sm" onClick={close}>✕</button></div>
+        <div className="modal-body">
+          <div className="form-group"><label>Business Name *</label><input type="text" placeholder="Sharma Real Estate" value={form.name} onChange={e=>set("name",e.target.value)}/></div>
+          <div className="form-row">
+            <div className="form-group"><label>Admin Full Name *</label><input type="text" placeholder="Ravi Sharma" value={form.adminName} onChange={e=>set("adminName",e.target.value)}/></div>
+            <div className="form-group"><label>Admin Phone *</label><input type="tel" placeholder="9876543210" value={form.phone} onChange={e=>set("phone",e.target.value)}/></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Admin Email * (login)</label><input type="email" placeholder="ravi@business.com" value={form.email} onChange={e=>set("email",e.target.value)}/></div>
+            <div className="form-group"><label>Default Password *</label><input type="text" placeholder="Admin@1234" value={form.password} onChange={e=>set("password",e.target.value)}/></div>
+          </div>
+          <div style={{background:"rgba(0,212,255,.06)",border:"1px solid rgba(0,212,255,.15)",borderRadius:8,padding:10,fontSize:12,color:"var(--accent)"}}>
+            ℹ️ The admin will use their email and this password to log in. Share credentials with them.
+          </div>
+        </div>
+        <div className="modal-footer"><button className="btn btn-ghost" onClick={close}>Cancel</button><button className="btn btn-primary" onClick={save}>🏢 Create Business</button></div>
+      </div>
+    </div>
+  );
+}
+
+// ── ADD USER MODAL (Business Admin) ───────────────────────────────────────────
+function AddUserModal({bizId,close}){
+  const [form,setForm]=useState({name:"",email:"",phone:"",password:"",role:"Sales"});
+  const set=(f,v)=>setForm(p=>({...p,[f]:v}));
+  const save=()=>{
+    if(!form.name||!form.email||!form.phone||!form.password){alert("All fields are required.");return;}
+    const users=LS.get("flm_users",[]);
+    if(users.find(u=>u.email.toLowerCase()===form.email.toLowerCase())){alert("Email already exists!");return;}
+    LS.set("flm_users",[...users,{...form,id:"u_"+Date.now(),bizId,active:true}]);
+    close();
+  };
+  return (
+    <div className="modal-overlay" onClick={close}>
+      <div className="modal modal-sm" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header"><div className="modal-title">👤 Add New User</div><button className="btn btn-ghost btn-sm" onClick={close}>✕</button></div>
+        <div className="modal-body">
+          <div className="form-group"><label>Full Name *</label><input type="text" placeholder="Rahul Kumar" value={form.name} onChange={e=>set("name",e.target.value)}/></div>
+          <div className="form-row">
+            <div className="form-group"><label>Email * (for login)</label><input type="email" placeholder="rahul@company.com" value={form.email} onChange={e=>set("email",e.target.value)}/></div>
+            <div className="form-group"><label>Phone *</label><input type="tel" placeholder="9876543210" value={form.phone} onChange={e=>set("phone",e.target.value)}/></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Password *</label><input type="text" placeholder="Rahul@123" value={form.password} onChange={e=>set("password",e.target.value)}/></div>
+            <div className="form-group"><label>Role</label><select value={form.role} onChange={e=>set("role",e.target.value)}><option>Sales</option><option>Business Admin</option></select></div>
+          </div>
+          <div style={{background:"rgba(245,158,11,.07)",border:"1px solid rgba(245,158,11,.2)",borderRadius:8,padding:10,fontSize:12,color:"var(--yellow)"}}>⚠️ Share these login credentials with the user.</div>
+        </div>
+        <div className="modal-footer"><button className="btn btn-ghost" onClick={close}>Cancel</button><button className="btn btn-primary" onClick={save}>+ Create User</button></div>
+      </div>
+    </div>
+  );
+}
+
+// ── ADD LEAD MODAL ────────────────────────────────────────────────────────────
+function AddLeadModal({bizId,bizUsers,allLeads,saveLeads,currentUser,close}){
+  const [form,setForm]=useState({name:"",phone:"",email:"",source:"Meta Lead Ads",campaign:"",stage:"New Lead",assignedTo:currentUser.role==="Sales"?currentUser.id:"",value:"",followUp:""});
+  const set=(f,v)=>setForm(p=>({...p,[f]:v}));
+  const save=()=>{
+    if(!form.name.trim()||!form.phone.trim()){alert("Name and phone are required.");return;}
+    saveLeads([...allLeads,{...form,id:"l_"+Date.now(),bizId,createdAt:new Date().toISOString().split("T")[0],notes:[],calls:[],value:Number(form.value)||0}]);
+    close();
+  };
+  return (
+    <div className="modal-overlay" onClick={close}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header"><div className="modal-title">Add New Lead</div><button className="btn btn-ghost btn-sm" onClick={close}>✕</button></div>
+        <div className="modal-body">
+          <div className="form-row">
+            <div className="form-group"><label>Full Name *</label><input type="text" placeholder="Priya Sharma" value={form.name} onChange={e=>set("name",e.target.value)}/></div>
+            <div className="form-group"><label>Phone *</label><input type="tel" placeholder="9876543210" value={form.phone} onChange={e=>set("phone",e.target.value)}/></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Email</label><input type="email" placeholder="priya@email.com" value={form.email} onChange={e=>set("email",e.target.value)}/></div>
+            <div className="form-group"><label>Value (₹)</label><input type="number" placeholder="25000" value={form.value} onChange={e=>set("value",e.target.value)}/></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Source</label><select value={form.source} onChange={e=>set("source",e.target.value)}>{SOURCES.map(s=><option key={s}>{s}</option>)}</select></div>
+            <div className="form-group"><label>Campaign</label><input type="text" placeholder="Summer Sale" value={form.campaign} onChange={e=>set("campaign",e.target.value)}/></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Stage</label><select value={form.stage} onChange={e=>set("stage",e.target.value)}>{STAGES.map(s=><option key={s}>{s}</option>)}</select></div>
+            <div className="form-group"><label>Assign To</label>
+              <select value={form.assignedTo} onChange={e=>set("assignedTo",e.target.value)} disabled={currentUser.role==="Sales"}>
+                <option value="">Unassigned</option>
+                {bizUsers.map(u=><option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="form-group"><label>📅 Follow-up Date</label><input type="date" value={form.followUp} onChange={e=>set("followUp",e.target.value)} min={new Date().toISOString().split("T")[0]}/></div>
+        </div>
+        <div className="modal-footer"><button className="btn btn-ghost" onClick={close}>Cancel</button><button className="btn btn-primary" onClick={save}>+ Add Lead</button></div>
+      </div>
+    </div>
+  );
+}
+
+// ── LEAD DETAIL MODAL ─────────────────────────────────────────────────────────
+function LeadDetailModal({leadId,allLeads,saveLeads,close,detailTab,setDetailTab,bizUsers,openWA,currentUser}){
+  const lead=allLeads.find(l=>l.id===leadId);
+  const [note,setNote]=useState("");
+  const [callNote,setCallNote]=useState("");
+  const [editMode,setEditMode]=useState(false);
+  const [form,setForm]=useState(lead?{...lead}:{});
+
+  if(!lead) return null;
+  const upd=(f,v)=>setForm(p=>({...p,[f]:v}));
+  const updateLead=(updated)=>saveLeads(allLeads.map(l=>l.id===leadId?updated:l));
+
+  const saveEdit=()=>{updateLead({...lead,...form});setEditMode(false);};
+  const addNote=()=>{
+    if(!note.trim())return;
+    updateLead({...lead,notes:[...lead.notes,{text:note,date:new Date().toISOString().split("T")[0]}]});
+    setNote("");
+  };
+  const addCall=()=>{
+    updateLead({...lead,calls:[...lead.calls,{type:"Outgoing",duration:"5 min",outcome:callNote||"Discussed",date:new Date().toISOString().split("T")[0]}]});
+    setCallNote("");
+  };
+  const assignedUser=bizUsers.find(u=>u.id===lead.assignedTo);
+
+  return (
+    <div className="modal-overlay" onClick={close}>
+      <div className="modal modal-lg" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <div className="modal-title">{lead.name}</div>
+            <div style={{fontSize:12,color:"var(--text3)",marginTop:2,fontFamily:"var(--mono)"}}>{lead.phone}{lead.email?" · "+lead.email:""}</div>
+          </div>
+          <div style={{display:"flex",gap:7}}>
+            <button className="btn btn-success btn-sm" onClick={e=>openWA(lead.phone,e)}>💬 WhatsApp</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setEditMode(!editMode)}>{editMode?"✕ Cancel":"✏️ Edit"}</button>
+            <button className="btn btn-ghost btn-sm" onClick={close}>✕</button>
+          </div>
+        </div>
+        <div className="modal-body">
+          {editMode?(
+            <>
+              <div className="form-row">
+                <div className="form-group"><label>Name</label><input type="text" value={form.name} onChange={e=>upd("name",e.target.value)}/></div>
+                <div className="form-group"><label>Phone</label><input type="tel" value={form.phone} onChange={e=>upd("phone",e.target.value)}/></div>
+              </div>
+              <div className="form-row">
+                <div className="form-group"><label>Email</label><input type="email" value={form.email||""} onChange={e=>upd("email",e.target.value)}/></div>
+                <div className="form-group"><label>Value (₹)</label><input type="number" value={form.value} onChange={e=>upd("value",Number(e.target.value))}/></div>
+              </div>
+              <div className="form-row">
+                <div className="form-group"><label>Stage</label><select value={form.stage} onChange={e=>upd("stage",e.target.value)}>{STAGES.map(s=><option key={s}>{s}</option>)}</select></div>
+                <div className="form-group"><label>Assign To</label>
+                  <select value={form.assignedTo||""} onChange={e=>upd("assignedTo",e.target.value)}>
+                    <option value="">Unassigned</option>
+                    {bizUsers.map(u=><option key={u.id} value={u.id}>{u.name}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group"><label>Source</label><select value={form.source} onChange={e=>upd("source",e.target.value)}>{SOURCES.map(s=><option key={s}>{s}</option>)}</select></div>
+                <div className="form-group"><label>📅 Follow-up Date</label><input type="date" value={form.followUp||""} onChange={e=>upd("followUp",e.target.value)}/></div>
+              </div>
+              <div style={{display:"flex",justifyContent:"flex-end"}}><button className="btn btn-primary" onClick={saveEdit}>💾 Save Changes</button></div>
+            </>
+          ):(
+            <>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:10,marginBottom:14}}>
+                {[
+                  ["Stage",<StageBadge stage={lead.stage}/>],
+                  ["Value",<span style={{fontSize:15,fontWeight:700,color:"var(--green)",fontFamily:"var(--mono)"}}>₹{lead.value.toLocaleString()}</span>],
+                  ["Follow-up",<span style={{fontSize:13,fontWeight:600,color:lead.followUp?"var(--yellow)":"var(--text3)"}}>{lead.followUp||"Not set"}</span>],
+                  ["Assigned",<span style={{fontSize:13,fontWeight:600}}>{assignedUser?assignedUser.name:"Unassigned"}</span>],
+                ].map(([lbl,val])=>(
+                  <div key={lbl} style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px"}}>
+                    <div style={{fontSize:10,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:4}}>{lbl}</div>
+                    {val}
+                  </div>
+                ))}
+              </div>
+              <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:14}}>
+                <span className="tag tag-blue">{lead.source}</span>
+                {lead.campaign&&<span className="tag tag-gray">{lead.campaign}</span>}
+              </div>
+            </>
+          )}
+
+          <div className="detail-tabs">
+            {["timeline","notes","calls","followup"].map(t=>(
+              <div key={t} className={`tab ${detailTab===t?"active":""}`} onClick={()=>setDetailTab(t)}>
+                {t==="timeline"?"📋 Timeline":t==="notes"?"📝 Notes":t==="calls"?"📞 Calls":"📅 Follow-up"}
+              </div>
+            ))}
+          </div>
+
+          {detailTab==="timeline"&&(
+            <div>
+              <div className="timeline-item"><div className="timeline-dot"/><div className="timeline-content"><div className="timeline-text">Lead created from <strong>{lead.source}</strong></div><div className="timeline-date">{lead.createdAt}</div></div></div>
+              {lead.notes.map((n,i)=><div key={i} className="timeline-item"><div className="timeline-dot" style={{background:"var(--yellow)"}}/><div className="timeline-content"><div className="timeline-text">📝 {n.text}</div><div className="timeline-date">{n.date}</div></div></div>)}
+              {lead.calls.map((c,i)=><div key={i} className="timeline-item"><div className="timeline-dot" style={{background:"var(--green)"}}/><div className="timeline-content"><div className="timeline-text">📞 {c.type} · {c.duration} · {c.outcome}</div><div className="timeline-date">{c.date}</div></div></div>)}
+              {lead.followUp&&<div className="timeline-item"><div className="timeline-dot" style={{background:"var(--purple)"}}/><div className="timeline-content"><div className="timeline-text">📅 Follow-up scheduled</div><div className="timeline-date">{lead.followUp}</div></div></div>}
+              {lead.notes.length===0&&lead.calls.length===0&&<div style={{color:"var(--text3)",fontSize:13,marginTop:8}}>No activity yet. Add notes or log a call.</div>}
+            </div>
+          )}
+          {detailTab==="notes"&&(
+            <div>
+              {lead.notes.map((n,i)=><div key={i} style={{background:"var(--surface2)",borderRadius:8,padding:11,marginBottom:9}}><div style={{fontSize:13}}>{n.text}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>{n.date}</div></div>)}
+              {lead.notes.length===0&&<p style={{color:"var(--text3)",fontSize:13,marginBottom:12}}>No notes yet.</p>}
+              <div style={{display:"flex",gap:7,marginTop:10}}>
+                <input type="text" value={note} onChange={e=>setNote(e.target.value)} placeholder="Type a note and press Enter..." style={{flex:1}} onKeyDown={e=>e.key==="Enter"&&addNote()}/>
+                <button className="btn btn-primary" onClick={addNote}>+ Add</button>
+              </div>
+            </div>
+          )}
+          {detailTab==="calls"&&(
+            <div>
+              {lead.calls.map((c,i)=><div key={i} style={{background:"var(--surface2)",borderRadius:8,padding:11,marginBottom:9,display:"flex",gap:10,alignItems:"center"}}><span style={{fontSize:18}}>📞</span><div><div style={{fontSize:13,fontWeight:600}}>{c.type} · {c.duration}</div><div style={{fontSize:12,color:"var(--text3)"}}>{c.outcome} · {c.date}</div></div></div>)}
+              {lead.calls.length===0&&<p style={{color:"var(--text3)",fontSize:13,marginBottom:12}}>No calls logged yet.</p>}
+              <div style={{display:"flex",gap:7,marginTop:10}}>
+                <input type="text" value={callNote} onChange={e=>setCallNote(e.target.value)} placeholder="Call outcome or notes..." style={{flex:1}}/>
+                <button className="btn btn-primary" onClick={addCall}>📞 Log Call</button>
+              </div>
+            </div>
+          )}
+          {detailTab==="followup"&&(
+            <div>
+              <div className="form-group">
+                <label>📅 Pick Follow-up Date</label>
+                <input type="date" value={lead.followUp||""} min={new Date().toISOString().split("T")[0]}
+                  onChange={e=>{updateLead({...lead,followUp:e.target.value});setForm(f=>({...f,followUp:e.target.value}));}}/>
+              </div>
+              {lead.followUp?
+                <div style={{background:"rgba(245,158,11,.08)",border:"1px solid rgba(245,158,11,.2)",borderRadius:8,padding:11,fontSize:13}}>
+                  📅 Follow-up scheduled for <strong style={{color:"var(--yellow)"}}>{lead.followUp}</strong>
+                  <button className="btn btn-sm btn-danger" style={{marginLeft:12}} onClick={()=>updateLead({...lead,followUp:""})}>Remove</button>
+                </div>
+              :<p style={{fontSize:13,color:"var(--text3)"}}>No follow-up scheduled. Pick a date above.</p>}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
